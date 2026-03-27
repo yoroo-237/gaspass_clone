@@ -1,0 +1,5 @@
+deploy:
+  - npm install
+  - npm run db:sync
+
+start: npm start
