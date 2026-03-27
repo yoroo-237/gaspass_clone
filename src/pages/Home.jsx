@@ -1,6 +1,7 @@
 import React from 'react'
 import HeroSection from '../components/HeroSection.jsx'
 import MarqueeTicker from '../components/MarqueeTicker.jsx'
+import BottomTicker from '../components/Bottomticker.jsx'
 import AnnouncementSection from '../components/AnnouncementSection.jsx'
 import ShopSection from '../components/ShopSection.jsx'
 import OctaneSection from '../components/OctaneSection.jsx'
@@ -14,6 +15,7 @@ export default function Home() {
       <HeroSection />
       <MarqueeTicker />
       <AnnouncementSection />
+      <BottomTicker />
       <ShopSection />
       <MarqueeTicker />
       <OctaneSection />
