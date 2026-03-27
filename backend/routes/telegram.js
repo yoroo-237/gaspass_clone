@@ -1,5 +1,5 @@
 import express from 'express';
-import bot from '../services/telegramService.js';
+import { getBot } from '../services/telegramService.js';
 import User from '../models/User.js';
 
 const router = express.Router();
@@ -7,6 +7,10 @@ const router = express.Router();
 // Webhook Telegram
 router.post('/webhook', async (req, res) => {
   try {
+    const bot = getBot();
+    if (!bot) {
+      return res.status(503).json({ error: 'Telegram Bot not available' });
+    }
     bot.processUpdate(req.body);
     res.json({ ok: true });
   } catch (err) {

@@ -1,5 +1,6 @@
+// App.jsx - VERSION CORRIGÉE
 import React from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
 import Home from './pages/Home.jsx'
 import ShopCategoryPage from './pages/ShopCategoryPage.jsx'
 import ProductDetailPage from './pages/ProductDetailPage.jsx'
@@ -11,6 +12,17 @@ import AdminDashboard from './pages/admin/AdminDashboard.jsx'
 import AdminOrders from './pages/admin/AdminOrders.jsx'
 import AdminProducts from './pages/admin/AdminProducts.jsx'
 import AdminUsers from './pages/admin/AdminUsers.jsx'
+
+// ✅ Layout avec Outlet pour rendre les pages enfants
+function PublicLayout() {
+  return (
+    <>
+      <Navbar />
+      <Outlet />   {/* ← C'est ici que Home / ShopCategoryPage / etc. se montent */}
+      <Footer />
+    </>
+  )
+}
 
 export default function App() {
   return (
@@ -26,10 +38,10 @@ export default function App() {
         </Route>
 
         {/* Public Routes */}
-        <Route element={ <><Navbar /> <Footer /></> }>
+        <Route element={<PublicLayout />}>   {/* ✅ */}
           <Route path="/" element={<Home />} />
-          <Route path="/shop/categories/:nrKGcDENu" element={<ShopCategoryPage />} />
-          <Route path="/shop/:SKMt4bmTG" element={<ProductDetailPage />} />
+          <Route path="/shop/categories/:grade" element={<ShopCategoryPage />} />
+          <Route path="/shop/:id" element={<ProductDetailPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
