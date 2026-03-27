@@ -5,20 +5,33 @@ import ShopCategoryPage from './pages/ShopCategoryPage.jsx'
 import ProductDetailPage from './pages/ProductDetailPage.jsx'
 import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
+import AdminLogin from './pages/admin/AdminLogin.jsx'
+import AdminLayout from './components/admin/AdminLayout.jsx'
+import AdminDashboard from './pages/admin/AdminDashboard.jsx'
+import AdminOrders from './pages/admin/AdminOrders.jsx'
+import AdminProducts from './pages/admin/AdminProducts.jsx'
+import AdminUsers from './pages/admin/AdminUsers.jsx'
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Navbar />
       <Routes>
-        {/* Route 1: Home — augiA20Il */}
-        <Route path="/" element={<Home />} />
-        {/* Route 2: Shop categories — /shop/categories/:id */}
-        <Route path="/shop/categories/:nrKGcDENu" element={<ShopCategoryPage />} />
-        {/* Route 3: Product detail — /shop/:id */}
-        <Route path="/shop/:SKMt4bmTG" element={<ProductDetailPage />} />
+        {/* Admin Routes */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="orders" element={<AdminOrders />} />
+          <Route path="products" element={<AdminProducts />} />
+          <Route path="users" element={<AdminUsers />} />
+        </Route>
+
+        {/* Public Routes */}
+        <Route element={ <><Navbar /> <Footer /></> }>
+          <Route path="/" element={<Home />} />
+          <Route path="/shop/categories/:nrKGcDENu" element={<ShopCategoryPage />} />
+          <Route path="/shop/:SKMt4bmTG" element={<ProductDetailPage />} />
+        </Route>
       </Routes>
-      <Footer />
     </BrowserRouter>
   )
 }
