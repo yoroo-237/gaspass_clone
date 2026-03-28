@@ -1,14 +1,15 @@
 import React, { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import useCart from '../hooks/useCart'
 import useReveal from '../hooks/useReveal.js'
 
 const PRODUCTS_DB = {
-  'hitch-hiker':      { name: 'HITCH HIKER',      grade: '91', tier: 'SUPREME',     color: '#9effa5', thc: '30%', cbd: '0.1%', type: 'Hybrid', lineage: 'Dosidos × Sherbert', terpenes: ['Limonene', 'Caryophyllene', 'Myrcene'], desc: 'A euphoric, full-body hybrid that hits from every angle. Dense frost-covered nugs with a sharp citrus nose that fades into a smooth earthy finish.' },
-  'purple-lemonade':  { name: 'PURPLE LEMONADE',  grade: '89', tier: 'PREMIUM',     color: '#cab171', thc: '26%', cbd: '0.2%', type: 'Indica', lineage: 'Purple Punch × Lemon OG', terpenes: ['Terpinolene', 'Ocimene', 'Myrcene'], desc: 'Deep purple hues and a punchy lemon aroma. Relaxing body effect with a clean, fruity exhale. Ideal for evening use.' },
-  'sundae-driver':    { name: 'SUNDAE DRIVER',    grade: '93', tier: 'HIGH OCTANE', color: '#ba0b20', thc: '33%', cbd: '0.1%', type: 'Hybrid', lineage: 'Fruity Pebbles OG × Grape Pie', terpenes: ['Caryophyllene', 'Limonene', 'Linalool'], desc: 'Creamy, dessert-like smoke with an insane terp profile. The kind of pack that makes the whole room stop and ask what you\'re smoking.' },
-  'gelonade-smalls':  { name: 'GELONADE SMALLS',  grade: '87', tier: 'REGULAR',     color: 'rgba(255,255,255,0.55)', thc: '22%', cbd: '0.3%', type: 'Sativa', lineage: 'Gelato 41 × Lemon Tree', terpenes: ['Limonene', 'Linalool', 'Myrcene'], desc: 'Budget-friendly smalls with a bright lemon-gelato nose. Excellent value for bulk buyers looking for a consistent daily driver.' },
-  'permanent-marker': { name: 'PERMANENT MARKER', grade: '93', tier: 'HIGH OCTANE', color: '#ba0b20', thc: '31%', cbd: '0.1%', type: 'Hybrid', lineage: 'Biscotti × Jealousy × Sherb Bx', terpenes: ['Caryophyllene', 'Limonene', 'Bisabolol'], desc: 'One of the most sought-after cuts of the season. Pungent, loud aroma with a complex flavor profile. Each nug is a statement.' },
-  'biscotti-cake':    { name: 'BISCOTTI CAKE',    grade: '91', tier: 'SUPREME',     color: '#9effa5', thc: '29%', cbd: '0.2%', type: 'Indica', lineage: 'Biscotti × Wedding Cake', terpenes: ['Caryophyllene', 'Myrcene', 'Limonene'], desc: 'Rich, doughy terps with a sugary exhale. Heavy indica effects that unwind the body without putting you on the couch.' },
+  'hitch-hiker':      { id: 1, name: 'HITCH HIKER',      grade: '91', tier: 'SUPREME',     color: '#9effa5', thc: '30%', cbd: '0.1%', type: 'Hybrid', lineage: 'Dosidos × Sherbert', terpenes: ['Limonene', 'Caryophyllene', 'Myrcene'], desc: 'A euphoric, full-body hybrid that hits from every angle. Dense frost-covered nugs with a sharp citrus nose that fades into a smooth earthy finish.', prices: { '3.5g': 12, '7g': 22, '14g': 40, '28g': 75, 'QP': 140, 'HP': 260, 'LB': 500 } },
+  'purple-lemonade':  { id: 2, name: 'PURPLE LEMONADE',  grade: '89', tier: 'PREMIUM',     color: '#cab171', thc: '26%', cbd: '0.2%', type: 'Indica', lineage: 'Purple Punch × Lemon OG', terpenes: ['Terpinolene', 'Ocimene', 'Myrcene'], desc: 'Deep purple hues and a punchy lemon aroma. Relaxing body effect with a clean, fruity exhale. Ideal for evening use.', prices: { '3.5g': 11, '7g': 20, '14g': 38, '28g': 70, 'QP': 130, 'HP': 240, 'LB': 450 } },
+  'sundae-driver':    { id: 3, name: 'SUNDAE DRIVER',    grade: '93', tier: 'HIGH OCTANE', color: '#ba0b20', thc: '33%', cbd: '0.1%', type: 'Hybrid', lineage: 'Fruity Pebbles OG × Grape Pie', terpenes: ['Caryophyllene', 'Limonene', 'Linalool'], desc: 'Creamy, dessert-like smoke with an insane terp profile. The kind of pack that makes the whole room stop and ask what you\'re smoking.', prices: { '3.5g': 13, '7g': 24, '14g': 45, '28g': 85, 'QP': 160, 'HP': 300, 'LB': 550 } },
+  'gelonade-smalls':  { id: 4, name: 'GELONADE SMALLS',  grade: '87', tier: 'REGULAR',     color: 'rgba(255,255,255,0.55)', thc: '22%', cbd: '0.3%', type: 'Sativa', lineage: 'Gelato 41 × Lemon Tree', terpenes: ['Limonene', 'Linalool', 'Myrcene'], desc: 'Budget-friendly smalls with a bright lemon-gelato nose. Excellent value for bulk buyers looking for a consistent daily driver.', prices: { '3.5g': 8, '7g': 15, '14g': 28, '28g': 50, 'QP': 90, 'HP': 160, 'LB': 300 } },
+  'permanent-marker': { id: 5, name: 'PERMANENT MARKER', grade: '93', tier: 'HIGH OCTANE', color: '#ba0b20', thc: '31%', cbd: '0.1%', type: 'Hybrid', lineage: 'Biscotti × Jealousy × Sherb Bx', terpenes: ['Caryophyllene', 'Limonene', 'Bisabolol'], desc: 'One of the most sought-after cuts of the season. Pungent, loud aroma with a complex flavor profile. Each nug is a statement.', prices: { '3.5g': 13, '7g': 24, '14g': 45, '28g': 85, 'QP': 160, 'HP': 300, 'LB': 550 } },
+  'biscotti-cake':    { id: 6, name: 'BISCOTTI CAKE',    grade: '91', tier: 'SUPREME',     color: '#9effa5', thc: '29%', cbd: '0.2%', type: 'Indica', lineage: 'Biscotti × Wedding Cake', terpenes: ['Caryophyllene', 'Myrcene', 'Limonene'], desc: 'Rich, doughy terps with a sugary exhale. Heavy indica effects that unwind the body without putting you on the couch.', prices: { '3.5g': 12, '7g': 22, '14g': 40, '28g': 75, 'QP': 140, 'HP': 260, 'LB': 500 } },
 }
 
 const WEIGHTS = ['3.5g', '7g', '14g', '28g', 'QP', 'HP', 'LB']
@@ -17,13 +18,16 @@ export default function ProductDetailPage() {
   const { id } = useParams()
   const [selectedWeight, setSelectedWeight] = useState('7g')
   const [added, setAdded] = useState(false)
+  const { addToCart } = useCart()
 
   const product = PRODUCTS_DB[id] || Object.values(PRODUCTS_DB)[0]
 
   const titleRef = useReveal(0.2)
   const infoRef = useReveal(0.15)
 
-  const handleOrder = () => {
+  const handleAddToCart = () => {
+    const price = product.prices[selectedWeight]
+    addToCart(product, selectedWeight, 1)
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
   }
@@ -201,7 +205,7 @@ export default function ProductDetailPage() {
 
             {/* CTA */}
             <button
-              onClick={handleOrder}
+              onClick={handleAddToCart}
               style={{
                 width: '100%',
                 fontFamily: 'var(--font-pixel)', fontSize: 10,
@@ -215,7 +219,7 @@ export default function ProductDetailPage() {
                 transform: added ? 'scale(0.98)' : 'scale(1)',
               }}
             >
-              {added ? '✓ ADDED TO ORDER' : `ORDER ${selectedWeight} VIA TELEGRAM`}
+              {added ? '✓ ADDED TO CART' : `ADD ${selectedWeight} TO CART`}
             </button>
 
             <p style={{

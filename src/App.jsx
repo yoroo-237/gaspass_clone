@@ -1,9 +1,12 @@
-// App.jsx - VERSION CORRIGÉE
 import React from 'react'
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
+import { CartProvider } from './context/CartContext'
 import Home from './pages/Home.jsx'
 import ShopCategoryPage from './pages/ShopCategoryPage.jsx'
 import ProductDetailPage from './pages/ProductDetailPage.jsx'
+import CartPage from './pages/CartPage.jsx'
+import CheckoutPage from './pages/CheckoutPage.jsx'
+import OrderPage from './pages/OrderPage.jsx'
 import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
 import AdminLogin from './pages/admin/AdminLogin.jsx'
@@ -18,7 +21,7 @@ function PublicLayout() {
   return (
     <>
       <Navbar />
-      <Outlet />   {/* ← C'est ici que Home / ShopCategoryPage / etc. se montent */}
+      <Outlet />
       <Footer />
     </>
   )
@@ -26,24 +29,29 @@ function PublicLayout() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Admin Routes */}
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="orders" element={<AdminOrders />} />
-          <Route path="products" element={<AdminProducts />} />
-          <Route path="users" element={<AdminUsers />} />
-        </Route>
+    <CartProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Admin Routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="orders" element={<AdminOrders />} />
+            <Route path="products" element={<AdminProducts />} />
+            <Route path="users" element={<AdminUsers />} />
+          </Route>
 
-        {/* Public Routes */}
-        <Route element={<PublicLayout />}>   {/* ✅ */}
-          <Route path="/" element={<Home />} />
-          <Route path="/shop/categories/:grade" element={<ShopCategoryPage />} />
-          <Route path="/shop/:id" element={<ProductDetailPage />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+          {/* Public Routes */}
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/shop/categories/:grade" element={<ShopCategoryPage />} />
+            <Route path="/shop/:id" element={<ProductDetailPage />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/order/:id" element={<OrderPage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </CartProvider>
   )
 }

@@ -21,7 +21,8 @@ const fetchAPI = async (endpoint, options = {}) => {
   });
 
   if (!response.ok) {
-    throw new Error(`API Error: ${response.statusText}`);
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `API Error: ${response.statusText}`);
   }
 
   return response.json();
@@ -44,7 +45,7 @@ export const login = (email, password) =>
     body: JSON.stringify({ email, password }),
   });
 
-// Orders
+// Orders - Peut être appelé sans authentification
 export const createOrder = (data) =>
   fetchAPI('/orders', {
     method: 'POST',
@@ -52,6 +53,7 @@ export const createOrder = (data) =>
   });
 
 export const getOrder = (id) => fetchAPI(`/orders/${id}`);
+
 export const updateOrderStatus = (id, status) =>
   fetchAPI(`/orders/${id}/status`, {
     method: 'PUT',

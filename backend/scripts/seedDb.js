@@ -110,8 +110,23 @@ const seedDb = async () => {
       }
     ];
 
+
     await Product.bulkCreate(products);
     console.log('✅ Produits créés');
+
+    // Seed super admin
+    const User = (await import('../models/User.js')).default;
+    const bcrypt = (await import('bcryptjs')).default;
+    const superAdminEmail = 'dr.mko@gmail.com';
+    const superAdminPassword = 'mko@123!';
+    const hash = await bcrypt.hash(superAdminPassword, 10);
+    await User.create({
+      email: superAdminEmail,
+      passwordHash: hash,
+      role: 'superadmin',
+      verified: true
+    });
+    console.log('✅ Super admin créé:', superAdminEmail);
 
     console.log('✅ Seed terminé!');
     process.exit(0);

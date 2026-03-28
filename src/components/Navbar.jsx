@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import useCart from '../hooks/useCart'
 
 function SearchIcon({ size = 20 }) {
   return (
@@ -38,9 +40,12 @@ function MenuIcon({ size = 20 }) {
   )
 }
 
-export default function Navbar() {
+
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const { cart, getItemCount } = useCart()
+  const itemCount = typeof getItemCount === 'function' ? getItemCount() : (cart?.length || 0)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10)
@@ -273,9 +278,29 @@ export default function Navbar() {
                 ))}
               </nav>
               <div className="gp-icons">
-                <button className="gp-icon-btn" aria-label="Recherche"><SearchIcon size={22} /></button>
-                <button className="gp-icon-btn" aria-label="Compte"><UserIcon size={22} /></button>
-                <button className="gp-icon-btn" aria-label="Panier"><CartIcon size={24} /></button>
+                  <button className="gp-icon-btn" aria-label="Recherche"><SearchIcon size={22} /></button>
+                  <button className="gp-icon-btn" aria-label="Compte"><UserIcon size={22} /></button>
+                  <button className="gp-icon-btn" aria-label="Panier" onClick={() => navigate('/cart')} style={{ position: 'relative' }}>
+                    <CartIcon size={24} />
+                    {itemCount > 0 && (
+                      <span style={{
+                        position: 'absolute',
+                        top: -7,
+                        right: -7,
+                        background: '#ba0b20',
+                        color: '#fff',
+                        borderRadius: '50%',
+                        width: 18,
+                        height: 18,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 11,
+                        fontWeight: 'bold',
+                        zIndex: 2
+                      }}>{itemCount}</span>
+                    )}
+                  </button>
               </div>
             </div>
             <button onClick={() => setMenuOpen(true)} className="gp-mobile-btn" aria-label="Menu">
@@ -294,7 +319,27 @@ export default function Navbar() {
             <div className="gp-pill-icons">
               <button className="gp-pill-btn" aria-label="Recherche"><SearchIcon size={22} /></button>
               <button className="gp-pill-btn" aria-label="Compte"><UserIcon size={22} /></button>
-              <button className="gp-pill-btn" aria-label="Panier"><CartIcon size={24} /></button>
+              <button className="gp-pill-btn" aria-label="Panier" onClick={() => navigate('/cart')} style={{ position: 'relative' }}>
+                <CartIcon size={24} />
+                {itemCount > 0 && (
+                  <span style={{
+                    position: 'absolute',
+                    top: -7,
+                    right: -7,
+                    background: '#ba0b20',
+                    color: '#fff',
+                    borderRadius: '50%',
+                    width: 18,
+                    height: 18,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 11,
+                    fontWeight: 'bold',
+                    zIndex: 2
+                  }}>{itemCount}</span>
+                )}
+              </button>
               <button className="gp-pill-btn" aria-label="Menu" onClick={() => setMenuOpen(true)}><MenuIcon size={22} /></button>
             </div>
           </div>
@@ -313,7 +358,27 @@ export default function Navbar() {
           <div style={{ display: 'flex', gap: 28, marginTop: 16 }}>
             <button className="gp-icon-btn"><SearchIcon size={24} /></button>
             <button className="gp-icon-btn"><UserIcon size={24} /></button>
-            <button className="gp-icon-btn"><CartIcon size={26} /></button>
+            <button className="gp-icon-btn" onClick={() => navigate('/cart')} style={{ position: 'relative' }}>
+              <CartIcon size={26} />
+              {itemCount > 0 && (
+                <span style={{
+                  position: 'absolute',
+                  top: -7,
+                  right: -7,
+                  background: '#ba0b20',
+                  color: '#fff',
+                  borderRadius: '50%',
+                  width: 18,
+                  height: 18,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 11,
+                  fontWeight: 'bold',
+                  zIndex: 2
+                }}>{itemCount}</span>
+              )}
+            </button>
           </div>
         </div>
       )}

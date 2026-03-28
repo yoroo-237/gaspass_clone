@@ -11,7 +11,7 @@ const router = express.Router();
 router.get('/dashboard', verifyAdmin, async (req, res) => {
   try {
     const totalOrders = await Order.count();
-    const totalRevenue = await Order.sum('total', { where: { paymentStatus: 'completed' } });
+    const totalRevenue = await Order.sum('total', { where: { paymentStatus: 'completed' } }) || 0;
     const totalUsers = await User.count();
     
     const recentOrders = await Order.findAll({ 
@@ -20,7 +20,7 @@ router.get('/dashboard', verifyAdmin, async (req, res) => {
     });
     
     res.json({
-      stats: { totalOrders, totalRevenue, totalUsers },
+      stats: { totalOrders, totalRevenue: totalRevenue || 0, totalUsers },
       recentOrders
     });
   } catch (err) {
@@ -47,6 +47,32 @@ router.get('/orders', verifyAdmin, async (req, res) => {
   }
 });
 
+// GET /api/admin/orders/:id
+router.get('/orders/:id', verifyAdmin, async (req, res) => {
+  try {
+    const order = await Order.findByPk(req.params.id);
+    if (!order) return res.status(404).json({ error: 'Commande non trouvée' });
+    res.json(order);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur' });
+  }
+});
+
+// PUT /api/admin/orders/:id
+router.put('/orders/:id', verifyAdmin, async (req, res) => {
+  try {
+    const { status, paymentStatus } = req.body;
+    const updateData = {};
+    if (status) updateData.status = status;
+    if (paymentStatus) updateData.paymentStatus = paymentStatus;
+    
+    await Order.update(updateData, { where: { id: req.params.id } });
+    res.json({ message: 'Commande mise à jour' });
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur' });
+  }
+});
+
 // GET /api/admin/products
 router.get('/products', verifyAdmin, async (req, res) => {
   try {
@@ -61,7 +87,7 @@ router.get('/products', verifyAdmin, async (req, res) => {
 router.post('/products', verifyAdmin, async (req, res) => {
   try {
     const product = await Product.create(req.body);
-    res.json(product);
+    res.status(201).json(product);
   } catch (err) {
     res.status(500).json({ error: 'Erreur création produit' });
   }
@@ -74,6 +100,16 @@ router.put('/products/:id', verifyAdmin, async (req, res) => {
     res.json({ message: 'Produit mis à jour' });
   } catch (err) {
     res.status(500).json({ error: 'Erreur' });
+  }
+});
+
+// DELETE /api/admin/products/:id
+router.delete('/products/:id', verifyAdmin, async (req, res) => {
+  try {
+    await Product.destroy({ where: { id: req.params.id } });
+    res.json({ message: 'Produit supprimé' });
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur suppression' });
   }
 });
 

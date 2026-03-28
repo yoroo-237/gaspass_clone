@@ -22,7 +22,8 @@ export default function AdminDashboard() {
     fetchStats()
   }, [])
 
-  if (loading) return <div style={{ color: '#fff' }}>Chargement...</div>
+  if (loading) return <div style={{ color: '#fff' }}>Chargement du dashboard...</div>
+  if (!stats) return <div style={{ color: '#ba0b20' }}>Erreur lors du chargement</div>
 
   return (
     <div>
@@ -41,7 +42,7 @@ export default function AdminDashboard() {
           borderRadius: 8,
           padding: 20
         }}>
-          <p style={{ color: 'rgba(255,255,255,0.6)', margin: 0 }}>Total Commandes</p>
+          <p style={{ color: 'rgba(255,255,255,0.6)', margin: 0 }}>📊 Total Commandes</p>
           <h3 style={{ color: '#9effa5', fontSize: 28, margin: '8px 0 0' }}>
             {stats?.stats?.totalOrders || 0}
           </h3>
@@ -53,9 +54,9 @@ export default function AdminDashboard() {
           borderRadius: 8,
           padding: 20
         }}>
-          <p style={{ color: 'rgba(255,255,255,0.6)', margin: 0 }}>Revenu Total</p>
+          <p style={{ color: 'rgba(255,255,255,0.6)', margin: 0 }}>💵 Revenu Total</p>
           <h3 style={{ color: '#ba0b20', fontSize: 28, margin: '8px 0 0' }}>
-            ${stats?.stats?.totalRevenue?.toFixed(2) || 0}
+            ${stats?.stats?.totalRevenue?.toFixed(2) || '0.00'}
           </h3>
         </div>
 
@@ -65,9 +66,21 @@ export default function AdminDashboard() {
           borderRadius: 8,
           padding: 20
         }}>
-          <p style={{ color: 'rgba(255,255,255,0.6)', margin: 0 }}>Total Utilisateurs</p>
+          <p style={{ color: 'rgba(255,255,255,0.6)', margin: 0 }}>👥 Utilisateurs</p>
           <h3 style={{ color: '#fff', fontSize: 28, margin: '8px 0 0' }}>
             {stats?.stats?.totalUsers || 0}
+          </h3>
+        </div>
+
+        <div style={{
+          background: 'rgba(255,255,255,0.05)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 8,
+          padding: 20
+        }}>
+          <p style={{ color: 'rgba(255,255,255,0.6)', margin: 0 }}>📈 Revenu Moyen</p>
+          <h3 style={{ color: '#9effa5', fontSize: 28, margin: '8px 0 0' }}>
+            ${stats?.stats?.totalOrders ? (stats.stats.totalRevenue / stats.stats.totalOrders).toFixed(2) : '0.00'}
           </h3>
         </div>
       </div>
@@ -75,32 +88,51 @@ export default function AdminDashboard() {
       {/* Recent Orders */}
       <div>
         <h2 style={{ color: '#fff', marginBottom: 16 }}>Commandes Récentes</h2>
-        <table style={{
-          width: '100%',
-          borderCollapse: 'collapse',
-          marginBottom: 40
+        <div style={{
+          background: 'rgba(255,255,255,0.05)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 8,
+          overflow: 'hidden'
         }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>ID</th>
-              <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Client</th>
-              <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Total</th>
-              <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {stats?.recentOrders?.map(order => (
-              <tr key={order.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <td style={{ padding: 12, color: '#fff' }}>{order.orderNumber}</td>
-                <td style={{ padding: 12, color: 'rgba(255,255,255,0.7)' }}>User #{order.userId}</td>
-                <td style={{ padding: 12, color: '#fff' }}>${order.total}</td>
-                <td style={{ padding: 12, color: order.status === 'completed' ? '#9effa5' : '#ba0b20' }}>
-                  {order.status}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          {stats?.recentOrders?.length === 0 ? (
+            <p style={{ color: 'rgba(255,255,255,0.6)', padding: 20, margin: 0 }}>Aucune commande</p>
+          ) : (
+            <table style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              marginBottom: 0
+            }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                  <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>ID</th>
+                  <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Client</th>
+                  <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Total</th>
+                  <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Paiement</th>
+                  <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats?.recentOrders?.map(order => (
+                  <tr key={order.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <td style={{ padding: 12, color: '#fff', fontSize: 13 }}>{order.orderNumber}</td>
+                    <td style={{ padding: 12, color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>
+                      {order.shippingAddress?.name || 'Anonyme'}
+                    </td>
+                    <td style={{ padding: 12, color: '#9effa5', fontWeight: 'bold' }}>
+                      ${order.total?.toFixed(2) || '0.00'}
+                    </td>
+                    <td style={{ padding: 12, color: order.paymentStatus === 'completed' ? '#9effa5' : '#ba0b20' }}>
+                      {order.paymentStatus}
+                    </td>
+                    <td style={{ padding: 12, color: '#fff', fontSize: 13 }}>
+                      {order.status}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
     </div>
   )
