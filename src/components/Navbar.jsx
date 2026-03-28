@@ -72,6 +72,7 @@ export default function Navbar() {
           z-index: 300;
           line-height: 1.4;
           transition: opacity 0.3s, transform 0.3s;
+          box-sizing: border-box;
         }
         .gp-announce.hidden {
           opacity: 0;
@@ -151,16 +152,17 @@ export default function Navbar() {
         }
         .gp-icon-btn:hover { opacity: 0.7; }
 
-        /* SCROLLED state — pill top-right */
+        /* SCROLLED state — desktop: pill à droite */
         .gp-header.scrolled {
           top: 0;
           background: transparent;
           display: flex;
           justify-content: flex-end;
           padding: 14px 28px;
+          box-sizing: border-box;
         }
 
-        /* Pill — bigger, matches screenshot */
+        /* Pill */
         .gp-pill {
           display: flex;
           align-items: center;
@@ -244,11 +246,23 @@ export default function Navbar() {
         }
 
         @media (max-width: 900px) {
+          /* Top state */
           .gp-right { display: none !important; }
           .gp-mobile-btn { display: flex !important; }
-          .gp-pill { display: none !important; }
           .gp-announce { font-size: 11px; padding: 8px 12px; }
           .gp-inner { padding: 0 20px; height: 58px; }
+
+          /* Scrolled state: pill centrée et pleine largeur sur mobile */
+          .gp-header.scrolled {
+            justify-content: center;
+            padding: 10px 16px;
+          }
+          .gp-pill {
+            width: 100%;
+            max-width: 100%;
+            justify-content: space-between;
+            box-sizing: border-box;
+          }
         }
       `}</style>
 
@@ -284,7 +298,7 @@ export default function Navbar() {
           </div>
         )}
 
-        {/* SCROLLED — pill top-right */}
+        {/* SCROLLED — pill (desktop: droite / mobile: centrée pleine largeur) */}
         {scrolled && (
           <div className="gp-pill">
             <Link to="/" className="gp-pill-logo">

@@ -21,13 +21,12 @@ export default function HeroSection() {
         .hero-section {
           width: 100%;
           height: 100vh;
-          min-height: 700px;
+          min-height: 600px;
           position: relative;
           overflow: hidden;
           display: flex;
         }
 
-        /* Background — personnage centré, tout visible */
         .hero-bg {
           position: absolute;
           inset: 0;
@@ -38,7 +37,6 @@ export default function HeroSection() {
           z-index: 0;
         }
 
-        /* Léger dégradé gauche pour lisibilité texte */
         .hero-overlay {
           position: absolute;
           inset: 0;
@@ -51,15 +49,12 @@ export default function HeroSection() {
           z-index: 1;
         }
 
-        /* Contenu texte — occupe toute la hauteur, écarte titre et sous-titre */
         .hero-content {
           position: relative;
           z-index: 2;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-
-          /* Starts below announce bar (36px) + navbar (70px) */
           padding-top: 116px;
           padding-left: 48px;
           padding-bottom: 56px;
@@ -70,7 +65,6 @@ export default function HeroSection() {
           box-sizing: border-box;
         }
 
-        /* Titre pixel — grand, espacé, remplit la hauteur disponible */
         .hero-title {
           font-family: 'Press Start 2P', monospace;
           color: #ffffff;
@@ -78,17 +72,17 @@ export default function HeroSection() {
           letter-spacing: 0.02em;
           margin: 0;
           text-transform: uppercase;
-          /*
-            Available height for title = 100vh - 116px top - 56px bottom - ~60px subtitle - ~32px gap
-            ≈ 100vh - 264px
-            At 900px screen: 636px / (8 lines × 1.38) ≈ 57px → clamp max at 54px
-            At 1080px screen: 816px / (8 × 1.38) ≈ 73px → clamp max at 54px
-            At 700px screen: 436px / (8 × 1.38) ≈ 39px → clamp picks vw
-          */
           font-size: clamp(20px, 4vw, 50px);
+          text-shadow: 0 2px 12px rgba(0,0,0,0.5);
         }
 
-        /* Sous-titre — en bas, bien séparé */
+        .hero-bottom {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          flex-shrink: 0;
+        }
+
         .hero-subtitle {
           font-family: 'Helvetica Neue', Arial, sans-serif;
           font-size: clamp(13px, 1.2vw, 17px);
@@ -96,34 +90,84 @@ export default function HeroSection() {
           line-height: 1.6;
           margin: 0;
           max-width: 500px;
+        }
+
+        /* CTA button — visible dans screenshot mobile */
+        .hero-cta {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          background: transparent;
+          border: 2px solid rgba(255,255,255,0.85);
+          border-radius: 999px;
+          padding: 14px 30px;
+          font-family: 'Helvetica Neue', Arial, sans-serif;
+          font-size: 16px;
+          font-weight: 600;
+          color: #ffffff;
+          cursor: pointer;
+          text-decoration: none;
+          width: fit-content;
+          transition: background 0.2s, color 0.2s;
+        }
+        .hero-cta:hover {
+          background: rgba(255,255,255,0.15);
+        }
+        .hero-cta-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: #ffffff;
           flex-shrink: 0;
         }
 
+        /* ── MOBILE ── */
         @media (max-width: 900px) {
           .hero-content {
-            width: 90%;
-            padding-left: 24px;
+            width: 100%;
+            min-width: unset;
+            padding-left: 20px;
+            padding-right: 20px;
             padding-top: 90px;
+            padding-bottom: 40px;
+            align-items: center;
+            text-align: center;
           }
           .hero-title {
-            font-size: clamp(18px, 5.5vw, 36px);
+            font-size: clamp(22px, 7vw, 38px);
+            text-align: center;
           }
           .hero-bg {
-            background-position: 70% center;
+            background-position: 60% center;
+          }
+          .hero-subtitle {
+            text-align: center;
+            font-size: clamp(13px, 3.5vw, 16px);
+          }
+          .hero-cta {
+            align-self: center;
+          }
+          .hero-bottom {
+            align-items: center;
           }
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 480px) {
           .hero-content {
-            width: 100%;
-            padding-left: 18px;
-            padding-right: 18px;
+            padding-left: 16px;
+            padding-right: 16px;
+            padding-top: 80px;
+            padding-bottom: 32px;
           }
           .hero-title {
-            font-size: clamp(14px, 5vw, 28px);
+            font-size: clamp(18px, 6.5vw, 28px);
           }
           .hero-bg {
-            background-position: 75% center;
+            background-position: 65% center;
+          }
+          .hero-cta {
+            padding: 12px 24px;
+            font-size: 14px;
           }
         }
       `}</style>
@@ -134,19 +178,21 @@ export default function HeroSection() {
 
         <div className="hero-content" ref={contentRef}>
           <h1 className="hero-title">
-            VOTRE<br/>
-            PASSAGE<br/>
-            D'ACCÈS<br/>
-            ILLIMITÉ À<br/>
-            L'ESSENCE<br/>
-            DE<br/>
-            PREMIÈRE<br/>
-            QUALITÉ
+            YOUR ALL<br/>
+            ACCESS PASS<br/>
+            TO PREMIUM<br/>
+            GAS
           </h1>
 
-          <p className="hero-subtitle">
-            Là où le haut de gamme n'est pas une catégorie, mais une norme
-          </p>
+          <div className="hero-bottom">
+            <p className="hero-subtitle">
+              where top shelf isn't a category — it's a standard
+            </p>
+            <a href="#boutique" className="hero-cta">
+              <span className="hero-cta-dot" />
+              Shop Flower
+            </a>
+          </div>
         </div>
       </section>
     </>

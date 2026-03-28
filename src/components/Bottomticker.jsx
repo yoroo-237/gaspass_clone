@@ -7,7 +7,7 @@ export default function BottomTicker() {
   return (
     <div style={{
       background: '#000000',
-      padding: '12px 0',
+      padding: '10px 0',
       overflow: 'hidden',
       userSelect: 'none',
       width: '100%',
@@ -22,11 +22,11 @@ export default function BottomTicker() {
           <span key={i} style={{
             fontFamily: "'Helvetica Neue', Arial, sans-serif",
             fontWeight: 700,
-            fontSize: 10,
+            fontSize: 'clamp(9px, 2vw, 10px)',
             letterSpacing: '0.14em',
             color: '#7a0010',
             whiteSpace: 'nowrap',
-            paddingRight: 36,
+            paddingRight: 32,
             flexShrink: 0,
             textTransform: 'uppercase',
           }}>

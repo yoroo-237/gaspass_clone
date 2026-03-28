@@ -1,12 +1,12 @@
 import React from 'react'
 
 const ITEMS = [
-  'SOUCHES UNIQUES',
-  'FUMÉE DE QUALITÉ',
-  'LIVRAISON RAPIDE',
-  'PETITS LOTS EXOTIQUES',
-  'EMBALLAGE DISCRET',
-  'PRIX LES PLUS BAS',
+  'SMALL BATCH EXOTICS',
+  'STEALTHY PACKAGING',
+  'QUICK DELIVERY',
+  'UNIQUE STRAINS',
+  'QUALITY SMOKE',
+  'LOWEST PRICES',
 ]
 
 const all = [...ITEMS, ...ITEMS, ...ITEMS, ...ITEMS]
@@ -35,17 +35,17 @@ export default function MarqueeTicker() {
             justifyContent: 'center',
             fontFamily: "'Helvetica Neue', Arial, sans-serif",
             fontWeight: 800,
-            fontSize: 13,
+            fontSize: 'clamp(11px, 2.5vw, 13px)',
             letterSpacing: '0.10em',
             color: '#ffffff',
             border: '2px solid rgba(255,255,255,0.85)',
             borderRadius: 999,
-            padding: '16px 40px',
-            marginRight: 18,
+            padding: '14px 32px',
+            marginRight: 14,
             whiteSpace: 'nowrap',
             flexShrink: 0,
             textTransform: 'uppercase',
-            height: 54,
+            height: 50,
             boxSizing: 'border-box',
           }}>
             {item}
@@ -57,6 +57,10 @@ export default function MarqueeTicker() {
         @keyframes marquee-fwd {
           0%   { transform: translateX(0); }
           100% { transform: translateX(-50%); }
+        }
+
+        @media (max-width: 600px) {
+          /* Slightly faster on mobile for better feel */
         }
       `}</style>
     </div>
