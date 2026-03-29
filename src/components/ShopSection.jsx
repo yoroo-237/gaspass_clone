@@ -2,12 +2,12 @@ import React from 'react'
 import useReveal from '../hooks/useReveal.js'
 
 const PRODUCTS = [
-  { name: 'AUTO-AUTO-TOURISTE', slug: 'hitch-hiker',      badge: 'Nouveau', image: 'public/JZlZpcElgglkOzxiEgbXIpsYy4.jpg' },
-  { name: 'LIMONADE VIOLETTE',  slug: 'purple-lemonade',  badge: 'Nouveau', image: 'public/crE5g6o6sQNSWbWVCYXUHUktB1Y.jpg' },
-  { name: 'CHAUFFEUR DE SUNDAE',slug: 'sundae-driver',    badge: 'Nouveau', image: 'public/6dnHHpKmlxZ5iN3DroU9xjuMu1s.jpg' },
-  { name: 'GELONADE SMALLS',    slug: 'gelonade-smalls',  badge: 'Nouveau', image: 'public/uFSQWKnoF44CCyIUJwJAUYSQxs.jpg' },
-  { name: 'PERMANENT MARKER',   slug: 'permanent-marker', badge: 'Nouveau', image: 'public/EZVdTIllwqZp3jRzDmQ87WGvg.jpg' },
-  { name: 'BISCOTTI CAKE',      slug: 'biscotti-cake',    badge: 'Nouveau', image: 'public/IvRrxhETfI0kGllqcnEKrKgKdQE.jpg' },
+  { name: 'HITCH HIKER',        slug: 'hitch-hiker',      badge: 'New', image: 'public/JZlZpcElgglkOzxiEgbXIpsYy4.jpg' },
+  { name: 'PURPLE LEMONADE',    slug: 'purple-lemonade',  badge: 'New', image: 'public/crE5g6o6sQNSWbWVCYXUHUktB1Y.jpg' },
+  { name: 'SUNDAE DRIVER',      slug: 'sundae-driver',    badge: 'New', image: 'public/6dnHHpKmlxZ5iN3DroU9xjuMu1s.jpg' },
+  { name: 'GELONADE SMALLS',    slug: 'gelonade-smalls',  badge: 'New', image: 'public/uFSQWKnoF44CCyIUJwJAUYSQxs.jpg' },
+  { name: 'PERMANENT MARKER',   slug: 'permanent-marker', badge: 'New', image: 'public/EZVdTIllwqZp3jRzDmQ87WGvg.jpg' },
+  { name: 'BISCOTTI CAKE',      slug: 'biscotti-cake',    badge: 'New', image: 'public/IvRrxhETfI0kGllqcnEKrKgKdQE.jpg' },
 ]
 
 function ProductCard({ product, index }) {
@@ -16,33 +16,12 @@ function ProductCard({ product, index }) {
   return (
     <div
       ref={ref}
-      className="reveal"
+      className="reveal product-card"
       style={{ transitionDelay: `${index * 80}ms`, cursor: 'pointer' }}
     >
-      {/* Image fully rounded on all 4 corners */}
-      <div style={{
-        width: '100%',
-        aspectRatio: '1 / 1',
-        position: 'relative',
-        borderRadius: 14,
-        overflow: 'hidden',
-        background: '#d4c9b0',
-      }}>
+      <div className="product-image-wrapper">
         {/* Badge */}
-        <div style={{
-          position: 'absolute',
-          top: 14,
-          left: 14,
-          fontFamily: 'var(--font-sans)',
-          fontSize: 13,
-          fontWeight: 500,
-          color: '#1a1a1a',
-          background: '#c8a96e',
-          padding: '5px 14px',
-          borderRadius: 30,
-          zIndex: 2,
-          letterSpacing: '0',
-        }}>
+        <div className="product-badge">
           {product.badge}
         </div>
 
@@ -58,17 +37,8 @@ function ProductCard({ product, index }) {
         />
       </div>
 
-      {/* Title sits OUTSIDE the card, directly on the page background */}
-      <div style={{ padding: '12px 4px 4px' }}>
-        <h3 style={{
-          fontFamily: 'var(--font-pixel)',
-          fontSize: 11,
-          fontWeight: 500,
-          color: '#111',
-          letterSpacing: '0.03em',
-          lineHeight: 1.5,
-          margin: 0,
-        }}>
+      <div style={{ padding: '10px 4px 4px' }}>
+        <h3 className="product-name">
           {product.name}
         </h3>
       </div>
@@ -80,70 +50,149 @@ export default function ShopSection() {
   const titleRef = useReveal(0.2)
 
   return (
-    <section
-      id="shop"
-      style={{
-        padding: '48px 32px 80px',
-        background: '#ffffff',
-        minHeight: '100vh',
-      }}
-    >
-      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+    <>
+      <style>{`
+        .shop-section {
+          padding: 48px 32px 80px;
+          background: #ffffff;
+          min-height: 100vh;
+        }
 
-        {/* Header row */}
-        <div
-          ref={titleRef}
-          className="reveal"
-          style={{
-            display: 'flex',
-            alignItems: 'baseline',
-            justifyContent: 'space-between',
-            marginBottom: 28,
-            flexWrap: 'wrap',
-            gap: 12,
-          }}
-        >
-          <h2 style={{
-            fontFamily: 'var(--font-pixel)',
-            fontSize: 'clamp(18px, 2.8vw, 32px)',
-            color: '#111',
-            letterSpacing: '0.04em',
-            lineHeight: 1.2,
-            margin: 0,
-            fontWeight: 700,
-          }}>
-            BOUTIQUE DE FLEURS
-          </h2>
+        .shop-inner {
+          max-width: 1100px;
+          margin: 0 auto;
+        }
 
-          <a
-            href="#"
-            style={{
-              fontFamily: 'var(--font-sans)',
-              fontSize: 18,
-              fontWeight: 600,
-              color: '#111',
-              textDecoration: 'none',
-              letterSpacing: '0',
-              whiteSpace: 'nowrap',
-            }}
-            onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
-            onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
-          >
-            Explorez la boutique →
-          </a>
+        .shop-header {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          margin-bottom: 28px;
+          flex-wrap: wrap;
+          gap: 12px;
+        }
+
+        .shop-title {
+          font-family: var(--font-pixel, 'Press Start 2P', monospace);
+          font-size: clamp(14px, 2.8vw, 32px);
+          color: #111;
+          letter-spacing: 0.04em;
+          line-height: 1.2;
+          margin: 0;
+          font-weight: 700;
+        }
+
+        .shop-explore-link {
+          font-family: var(--font-sans, 'Helvetica Neue', Arial, sans-serif);
+          font-size: 18px;
+          font-weight: 600;
+          color: #111;
+          text-decoration: none;
+          letter-spacing: 0;
+          white-space: nowrap;
+        }
+        .shop-explore-link:hover { text-decoration: underline; }
+
+        /* Grid — 3 cols desktop, 2 cols mobile (comme screenshot) */
+        .shop-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 16px;
+        }
+
+        .product-image-wrapper {
+          width: 100%;
+          aspect-ratio: 1 / 1;
+          position: relative;
+          border-radius: 14px;
+          overflow: hidden;
+          background: #d4c9b0;
+        }
+
+        .product-badge {
+          position: absolute;
+          top: 12px;
+          left: 12px;
+          font-family: var(--font-sans, 'Helvetica Neue', Arial, sans-serif);
+          font-size: 13px;
+          font-weight: 500;
+          color: #1a1a1a;
+          background: #c8a96e;
+          padding: 5px 14px;
+          border-radius: 30px;
+          z-index: 2;
+          letter-spacing: 0;
+        }
+
+        .product-name {
+          font-family: var(--font-pixel, 'Press Start 2P', monospace);
+          font-size: 11px;
+          font-weight: 500;
+          color: #111;
+          letter-spacing: 0.03em;
+          line-height: 1.5;
+          margin: 0;
+        }
+
+        /* ── MOBILE ── */
+        @media (max-width: 900px) {
+          .shop-section {
+            padding: 32px 16px 60px;
+          }
+          /* 2 colonnes sur mobile comme dans les screenshots */
+          .shop-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+          }
+          .shop-title {
+            font-size: clamp(12px, 3.5vw, 20px);
+          }
+          .shop-explore-link {
+            font-size: 15px;
+          }
+          .shop-header {
+            margin-bottom: 20px;
+          }
+          .product-badge {
+            font-size: 11px;
+            padding: 4px 10px;
+            top: 10px;
+            left: 10px;
+          }
+          .product-name {
+            font-size: 9px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .shop-section {
+            padding: 24px 12px 48px;
+          }
+          .shop-grid {
+            gap: 10px;
+          }
+        }
+      `}</style>
+
+      <section className="shop-section" id="shop">
+        <div className="shop-inner">
+          <div ref={titleRef} className="shop-header reveal">
+            <h2 className="shop-title">FLOWER SHOP</h2>
+            <a
+              href="#"
+              className="shop-explore-link"
+            >
+              Explore the shop →
+            </a>
+          </div>
+
+          <div className="shop-grid">
+            {PRODUCTS.map((p, i) => (
+              <ProductCard key={p.name} product={p} index={i} />
+            ))}
+          </div>
         </div>
-
-        {/* Grid — 3 columns */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '16px 16px',
-        }}>
-          {PRODUCTS.map((p, i) => (
-            <ProductCard key={p.name} product={p} index={i} />
-          ))}
-        </div>
-      </div>
-    </section>
+      </section>
+    </>
   )
 }

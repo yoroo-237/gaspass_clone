@@ -1,225 +1,208 @@
-import React, { useState } from 'react'
+import React from 'react'
 import useReveal from '../hooks/useReveal.js'
+import octaneImage from '../../public/WsBRqxsaJ207ntyD0XfPcrvE.png' // ← adapte le chemin de ton image
 
 const TIERS = [
   {
     grade: '87',
     label: 'Regular',
-    color: 'rgba(255,255,255,0.55)',
-    accent: 'rgba(255,255,255,0.15)',
     description: "Reliable, budget friendly, and still brings the heat. Think everyday smoke that won't break the bank.",
-    shopLabel: 'Shop 87',
+    spaceBeforeDesc: true,
   },
   {
     grade: '89',
     label: 'Premium',
-    color: '#cab171',
-    accent: 'rgba(202,177,113,0.15)',
     description: 'A step up in flavor, freshness, and consistency. Better bag appeal, smoother burn, and a more dialed in experience.',
-    shopLabel: 'Shop 89',
+    spaceBeforeDesc: true,
   },
   {
     grade: '91',
     label: 'Supreme',
-    color: '#9effa5',
-    accent: 'rgba(158,255,165,0.12)',
     description: 'This is where the shelves start glowing. Loud terps, rich colors and top tier cuts that check every box.',
-    shopLabel: 'Shop 91',
+    spaceBeforeDesc: false,
   },
   {
     grade: '93',
     label: 'High Octane',
-    color: '#ba0b20',
-    accent: 'rgba(186,11,32,0.15)',
     description: 'The creme de la creme. Rare exotics, insane frost, full spectrum effects. For those who know the difference—and smoke like it.',
-    shopLabel: 'Shop 93',
+    spaceBeforeDesc: false,
   },
 ]
 
-function TierCard({ tier, index, active, onClick }) {
-  const ref = useReveal(0.1)
-
-  return (
-    <div
-      ref={ref}
-      className="reveal"
-      style={{ transitionDelay: `${index * 100}ms` }}
-    >
-      <div
-        onClick={onClick}
-        style={{
-          background: active ? tier.accent : 'rgba(255,255,255,0.02)',
-          border: `1px solid ${active ? tier.color + '60' : 'rgba(255,255,255,0.06)'}`,
-          borderRadius: 8,
-          padding: '32px 28px',
-          cursor: 'pointer',
-          transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-        onMouseEnter={e => {
-          if (!active) {
-            e.currentTarget.style.borderColor = `${tier.color}35`
-            e.currentTarget.style.background = `${tier.accent}`
-          }
-        }}
-        onMouseLeave={e => {
-          if (!active) {
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'
-            e.currentTarget.style.background = 'rgba(255,255,255,0.02)'
-          }
-        }}
-      >
-        {/* Grade number */}
-        <div style={{
-          fontFamily: 'var(--font-pixel)',
-          fontSize: 'clamp(36px, 6vw, 56px)',
-          color: tier.color,
-          lineHeight: 1,
-          marginBottom: 12,
-          opacity: active ? 1 : 0.5,
-          transition: 'opacity 0.3s',
-        }}>
-          {tier.grade}
-        </div>
-
-        {/* Label */}
-        <div style={{
-          fontFamily: 'var(--font-pixel)',
-          fontSize: 8,
-          color: tier.color,
-          letterSpacing: '0.15em',
-          marginBottom: 20,
-          opacity: active ? 1 : 0.5,
-          transition: 'opacity 0.3s',
-        }}>
-          {tier.label.toUpperCase()}
-        </div>
-
-        {/* Description (shown when active) */}
-        <div style={{
-          fontSize: 14,
-          lineHeight: 1.8,
-          color: 'rgba(255,255,255,0.65)',
-          maxHeight: active ? '120px' : '0px',
-          overflow: 'hidden',
-          transition: 'max-height 0.5s cubic-bezier(0.16,1,0.3,1), opacity 0.3s',
-          opacity: active ? 1 : 0,
-          marginBottom: active ? 24 : 0,
-        }}>
-          {tier.description}
-        </div>
-
-        {/* Shop button */}
-        <div style={{
-          maxHeight: active ? '60px' : '0px',
-          overflow: 'hidden',
-          transition: 'max-height 0.4s cubic-bezier(0.16,1,0.3,1)',
-        }}>
-          <a href="#shop" style={{
-            display: 'inline-block',
-            fontFamily: 'var(--font-pixel)',
-            fontSize: 7,
-            color: tier.color,
-            border: `1px solid ${tier.color}55`,
-            padding: '10px 18px',
-            borderRadius: 2,
-            textDecoration: 'none',
-            letterSpacing: '0.1em',
-            transition: 'background 0.2s',
-          }}
-          onMouseEnter={e => e.currentTarget.style.background = `${tier.color}18`}
-          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
-            {tier.shopLabel} →
-          </a>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function OctaneSection() {
-  const [active, setActive] = useState(2) // Default: 91 Supreme
-  const titleRef = useReveal(0.2)
-  const bottomRef = useReveal(0.2)
-
   return (
     <section style={{
-      padding: '100px 24px',
-      borderTop: '1px solid rgba(255,255,255,0.06)',
-      borderBottom: '1px solid rgba(255,255,255,0.06)',
+      background: '#000',
+      padding: '80px 0',
+      overflow: 'hidden',
     }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-
-        {/* Header */}
-        <div ref={titleRef} className="reveal" style={{ marginBottom: 70, maxWidth: 600 }}>
-          <div style={{
-            fontFamily: 'var(--font-pixel)',
-            fontSize: 8,
-            color: '#ba0b20',
-            letterSpacing: '0.2em',
-            marginBottom: 20,
-          }}>
-            ONLY AT GAS PASS
-          </div>
-          <h2 style={{
-            fontFamily: 'var(--font-pixel)',
-            fontSize: 'clamp(18px, 3vw, 34px)',
-            color: '#fff',
-            lineHeight: 1.5,
-            letterSpacing: '0.04em',
-            marginBottom: 24,
-          }}>
-            PICK YOUR OCTANE
-          </h2>
-          <p style={{
-            fontSize: 15,
-            lineHeight: 1.9,
-            color: 'rgba(255,255,255,0.55)',
-          }}>
-            Not all gas is created the same. At GasPass, we grade our flower like premium fuel — because quality should be easy to spot.
-          </p>
-        </div>
-
-        {/* Tier grid */}
-        <div style={{
+      <div
+        className="octane-grid"
+        style={{
+          maxWidth: 1400,
+          margin: '0 auto',
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: 16,
-          marginBottom: 60,
-        }}>
-          {TIERS.map((tier, i) => (
-            <TierCard
-              key={tier.grade}
-              tier={tier}
-              index={i}
-              active={active === i}
-              onClick={() => setActive(i)}
-            />
+          gridTemplateColumns: '52fr 48fr',
+          alignItems: 'start',
+          paddingLeft: 80,
+          paddingRight: 0,
+        }}
+      >
+
+        {/* ── LEFT COLUMN ── */}
+        <div style={{ paddingRight: 48 }}>
+
+          {/* Big title */}
+          <h2 style={{
+            fontSize: 'clamp(30px, 3.5vw, 50px)',
+            fontWeight: 900,
+            color: '#fff',
+            lineHeight: 1.08,
+            letterSpacing: '-0.01em',
+            marginBottom: 20,
+            fontFamily: 'inherit',
+          }}>
+            Fueling the Industry,<br />One Pack at a Time
+          </h2>
+
+          {/* Pick your Octane */}
+          <p style={{
+            fontWeight: 700,
+            fontSize: 16,
+            color: '#fff',
+            marginBottom: 16,
+          }}>
+            Pick your Octane
+          </p>
+
+          {/* Intro */}
+          <p style={{
+            fontWeight: 700,
+            fontSize: 16,
+            lineHeight: 1.7,
+            color: '#fff',
+            marginBottom: 28,
+          }}>
+            Not all gas is created the same. At GasPass, we grade our flower like premium fuel - because quality should be easy to spot. Each tier reflects potency, nose, structure, and overall effect.
+          </p>
+
+          {/* Tiers */}
+          {TIERS.map((tier) => (
+            <div key={tier.grade} style={{ marginBottom: 20 }}>
+              <p style={{
+                fontWeight: 700,
+                fontSize: 16,
+                color: '#fff',
+                marginBottom: tier.spaceBeforeDesc ? 14 : 0,
+              }}>
+                {tier.grade} {tier.label}
+              </p>
+              <p style={{
+                fontWeight: 700,
+                fontSize: 16,
+                lineHeight: 1.7,
+                color: '#fff',
+              }}>
+                {tier.description}
+              </p>
+            </div>
           ))}
+
+          {/* Bottom note */}
+          <p style={{
+            fontWeight: 700,
+            fontSize: 16,
+            lineHeight: 1.7,
+            color: '#fff',
+            marginBottom: 44,
+            marginTop: 4,
+          }}>
+            Whether you're rolling up daily or hunting for heat, our octane system keeps it simple. The higher the number, the higher the quality. Choose&nbsp; wisely - your lungs will thank you.
+          </p>
+
+          {/* Shop Flower CTA */}
+          <a
+            href="#shop"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '15px 28px',
+              border: '2px solid #fff',
+              borderRadius: 999,
+              color: '#fff',
+              fontSize: 15,
+              fontWeight: 600,
+              textDecoration: 'none',
+              background: 'transparent',
+              transition: 'background 0.2s, color 0.2s',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = '#fff'
+              e.currentTarget.style.color = '#000'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.color = '#fff'
+            }}
+          >
+            Shop Flower →
+          </a>
         </div>
 
-        {/* Bottom note */}
-        <div ref={bottomRef} className="reveal" style={{
-          borderTop: '1px solid rgba(255,255,255,0.06)',
-          paddingTop: 40,
-          fontSize: 14,
-          lineHeight: 1.9,
-          color: 'rgba(255,255,255,0.4)',
-          maxWidth: 700,
-          fontStyle: 'italic',
-        }}>
-          Whether you're rolling up daily or hunting for heat, our octane system keeps it simple. The higher the number, the higher the quality. Choose wisely — your lungs will thank you.
+        {/* ── RIGHT COLUMN — sticky image ── */}
+        <div
+          className="octane-img-col"
+          style={{
+            position: 'sticky',
+            top: 80,
+            alignSelf: 'start',
+          }}
+        >
+          {/* Spacer : aligne le haut de l'image avec "87 Regular" */}
+          <div className="octane-img-offset" style={{ height: 230 }} />
+          <div className="octane-img-wrap" style={{
+            borderRadius: '16px 0 0 16px',
+            overflow: 'hidden',
+            lineHeight: 0,
+          }}>
+            <img
+              src={octaneImage}
+              alt="GasPass octane tiers characters"
+              style={{
+                width: '100%',
+                height: '62vh',
+                objectFit: 'cover',
+                objectPosition: 'center top',
+                display: 'block',
+              }}
+            />
+          </div>
         </div>
+
       </div>
 
       <style>{`
-        @media (max-width: 768px) {
-          .tier-grid { grid-template-columns: repeat(2, 1fr) !important; }
-        }
-        @media (max-width: 480px) {
-          .tier-grid { grid-template-columns: 1fr !important; }
+        @media (max-width: 900px) {
+          .octane-grid {
+            grid-template-columns: 1fr !important;
+            padding-left: 20px !important;
+            padding-right: 20px !important;
+          }
+          .octane-img-offset {
+            display: none !important;
+          }
+          .octane-img-col {
+            position: static !important;
+            margin-top: 48px !important;
+          }
+          .octane-img-wrap {
+            border-radius: 16px !important;
+          }
+          .octane-img-wrap img {
+            height: 320px !important;
+          }
         }
       `}</style>
     </section>
