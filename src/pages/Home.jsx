@@ -9,6 +9,7 @@ import SpecsSection from '../components/SpecsSection.jsx'
 import AboutSection from '../components/AboutSection.jsx'
 import OrderSection from '../components/OrderSection.jsx'
 import FeaturesSection from '../components/Featuresection.jsx'  
+import AboutSection2 from '../components/AboutSection2.jsx'
 
 export default function Home() {
   return (
@@ -22,6 +23,7 @@ export default function Home() {
       <OctaneSection />
       <SpecsSection />
       <AboutSection />
+      <AboutSection2 />
       <OrderSection />
     </main>
   )
