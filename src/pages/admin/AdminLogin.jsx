@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import '../../styles/admin.css'
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('')
@@ -22,114 +23,78 @@ export default function AdminLogin() {
 
       const data = await res.json()
 
-      if (res.ok && data.user.role === 'admin') {
+      if (res.ok && data.user?.role === 'admin') {
         localStorage.setItem('adminToken', data.token)
         navigate('/admin/dashboard')
       } else {
-        setError('Identifiants invalides ou accès admin refusé')
+        setError('Identifiants invalides ou accès administrateur refusé.')
       }
     } catch (err) {
-      setError('Erreur connexion')
+      setError('Erreur de connexion. Vérifiez votre réseau.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: '#0a0a0a'
-    }}>
-      <div style={{
-        width: '100%',
-        maxWidth: 400,
-        padding: 24,
-        background: 'rgba(255,255,255,0.05)',
-        border: '1px solid rgba(255,255,255,0.1)',
-        borderRadius: 12
-      }}>
-        <h1 style={{ color: '#9effa5', marginBottom: 32, textAlign: 'center' }}>Admin Panel</h1>
+    <div className="admin-login-page">
+      <div className="admin-login-card">
+        {/* Logo / brand */}
+        <div className="admin-login-logo">
+          <div className="admin-login-logo-icon">🔒</div>
+          <h1 className="admin-login-title">GAS PASS</h1>
+          <p className="admin-login-subtitle">Connectez-vous à votre espace admin</p>
+        </div>
 
-        <form onSubmit={handleLogin}>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: 8 }}>
-              Email
-            </label>
+        {/* Form */}
+        <form onSubmit={handleLogin} className="admin-form">
+          <div className="admin-form-group">
+            <label className="admin-form-label">Adresse email</label>
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                background: 'rgba(255,255,255,0.1)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: 6,
-                color: '#fff',
-                fontSize: 14,
-                boxSizing: 'border-box'
-              }}
+              onChange={e => setEmail(e.target.value)}
+              className="admin-form-input"
+              placeholder="admin@gaspass.com"
               required
+              autoFocus
             />
           </div>
 
-          <div style={{ marginBottom: 24 }}>
-            <label style={{ color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: 8 }}>
-              Mot de passe
-            </label>
+          <div className="admin-form-group">
+            <label className="admin-form-label">Mot de passe</label>
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                background: 'rgba(255,255,255,0.1)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: 6,
-                color: '#fff',
-                fontSize: 14,
-                boxSizing: 'border-box'
-              }}
+              onChange={e => setPassword(e.target.value)}
+              className="admin-form-input"
+              placeholder="••••••••"
               required
             />
           </div>
 
           {error && (
-            <div style={{
-              padding: 12,
-              background: 'rgba(186,11,32,0.2)',
-              border: '1px solid rgba(186,11,32,0.4)',
-              borderRadius: 6,
-              color: '#ff6b6b',
-              marginBottom: 16,
-              fontSize: 13
-            }}>
-              {error}
+            <div className="admin-alert admin-alert-error">
+              ⚠️ {error}
             </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            style={{
-              width: '100%',
-              padding: '12px 16px',
-              background: '#9effa5',
-              border: 'none',
-              borderRadius: 6,
-              color: '#000',
-              fontWeight: 'bold',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.5 : 1
-            }}
+            className="admin-btn admin-btn-primary"
+            style={{ width: '100%', justifyContent: 'center', padding: '12px', marginTop: 4 }}
           >
-            {loading ? 'Connexion...' : 'Connexion'}
+            {loading
+              ? <><div className="admin-loading-spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> Connexion…</>
+              : '→ Se connecter'
+            }
           </button>
         </form>
+
+        <p style={{ textAlign: 'center', marginTop: 24, fontSize: 12, color: 'var(--adm-text-muted)' }}>
+          Accès réservé aux administrateurs
+        </p>
       </div>
     </div>
   )

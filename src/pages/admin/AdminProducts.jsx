@@ -1,70 +1,62 @@
 import React, { useState, useEffect } from 'react'
+import '../../styles/admin.css'
+
+const EMPTY_FORM = {
+  name: '', slug: '', grade: '', tier: '', thc: '', cbd: '',
+  type: '', description: '', active: true
+}
 
 export default function AdminProducts() {
   const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
-  const [formData, setFormData] = useState({
-    name: '',
-    slug: '',
-    grade: '',
-    tier: '',
-    thc: '',
-    cbd: '',
-    type: '',
-    description: '',
-    active: true
-  })
+  const [formData, setFormData] = useState(EMPTY_FORM)
+  const [saving, setSaving] = useState(false)
 
   const fetchProducts = async () => {
+    setLoading(true)
     try {
       const token = localStorage.getItem('adminToken')
       const res = await fetch('http://localhost:5000/api/admin/products', {
         headers: { Authorization: `Bearer ${token}` }
       })
       const data = await res.json()
-      setProducts(data)
+      setProducts(data.products || [])
     } catch (err) {
       console.error('Erreur fetch produits:', err)
+    } finally {
+      setLoading(false)
     }
   }
 
-  useEffect(() => {
-    fetchProducts()
-  }, [])
+  useEffect(() => { fetchProducts() }, [])
 
   const resetForm = () => {
     setEditingId(null)
-    setFormData({ name: '', slug: '', grade: '', tier: '', thc: '', cbd: '', type: '', description: '', active: true })
+    setFormData(EMPTY_FORM)
     setShowForm(false)
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setSaving(true)
     try {
       const token = localStorage.getItem('adminToken')
-      const url = editingId 
+      const url = editingId
         ? `http://localhost:5000/api/admin/products/${editingId}`
         : 'http://localhost:5000/api/admin/products'
-      const method = editingId ? 'PUT' : 'POST'
-
       const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
+        method: editingId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(formData)
       })
-      
-      if (res.ok) {
-        resetForm()
-        fetchProducts()
-      } else {
-        alert('Erreur lors de la sauvegarde')
-      }
+      if (res.ok) { resetForm(); fetchProducts() }
+      else alert('Erreur lors de la sauvegarde')
     } catch (err) {
-      console.error('Erreur sauvegarde produit:', err)
+      console.error('Erreur sauvegarde:', err)
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -72,264 +64,183 @@ export default function AdminProducts() {
     setFormData(product)
     setEditingId(product.id)
     setShowForm(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleDelete = async (productId) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit?')) return
-    
+    if (!confirm('Supprimer ce produit définitivement ?')) return
     try {
       const token = localStorage.getItem('adminToken')
       const res = await fetch(`http://localhost:5000/api/admin/products/${productId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       })
-      
-      if (res.ok) {
-        fetchProducts()
-      }
+      if (res.ok) fetchProducts()
     } catch (err) {
       console.error('Erreur suppression:', err)
     }
   }
 
+  const set = (field) => (e) => setFormData(prev => ({ ...prev, [field]: e.target.value }))
+  const setCheck = (field) => (e) => setFormData(prev => ({ ...prev, [field]: e.target.checked }))
+
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 style={{ color: '#fff', margin: 0 }}>Gestion Produits</h1>
-        <button 
-          onClick={() => { if (!showForm) resetForm(); setShowForm(!showForm); }}
-          style={{
-            padding: '10px 20px',
-            background: '#9effa5',
-            border: 'none',
-            color: '#000',
-            borderRadius: 6,
-            cursor: 'pointer',
-            fontWeight: 'bold'
-          }}
+      <div className="admin-page-header">
+        <h1 className="admin-page-title">Produits</h1>
+        <button
+          onClick={() => { if (showForm) resetForm(); else setShowForm(true) }}
+          className={`admin-btn ${showForm ? 'admin-btn-ghost' : 'admin-btn-primary'}`}
         >
-          ➕ {showForm ? 'Annuler' : 'Ajouter Produit'}
+          {showForm ? '✕ Annuler' : '+ Nouveau Produit'}
         </button>
       </div>
 
+      {/* Form */}
       {showForm && (
-        <form onSubmit={handleSubmit} style={{
-          background: 'rgba(255,255,255,0.05)',
-          padding: 20,
-          borderRadius: 8,
-          marginBottom: 24,
-          border: '1px solid rgba(255,255,255,0.1)'
-        }}>
-          <h3 style={{ color: '#fff', marginBottom: 16 }}>
-            {editingId ? 'Éditer Produit' : 'Ajouter Nouveau Produit'}
-          </h3>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, marginBottom: 16 }}>
-            <input 
-              type="text" 
-              placeholder="Nom *" 
-              value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
-              required
-              style={{
-                padding: '10px 12px',
-                background: 'rgba(255,255,255,0.1)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: 6,
-                color: '#fff'
-              }}
-            />
-            <input 
-              type="text" 
-              placeholder="Slug *" 
-              value={formData.slug}
-              onChange={(e) => setFormData({...formData, slug: e.target.value})}
-              required
-              style={{
-                padding: '10px 12px',
-                background: 'rgba(255,255,255,0.1)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: 6,
-                color: '#fff'
-              }}
-            />
-            <input 
-              type="text" 
-              placeholder="Grade" 
-              value={formData.grade}
-              onChange={(e) => setFormData({...formData, grade: e.target.value})}
-              style={{
-                padding: '10px 12px',
-                background: 'rgba(255,255,255,0.1)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: 6,
-                color: '#fff'
-              }}
-            />
-            <input 
-              type="text" 
-              placeholder="Tier" 
-              value={formData.tier}
-              onChange={(e) => setFormData({...formData, tier: e.target.value})}
-              style={{
-                padding: '10px 12px',
-                background: 'rgba(255,255,255,0.1)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: 6,
-                color: '#fff'
-              }}
-            />
-            <input 
-              type="text" 
-              placeholder="THC%" 
-              value={formData.thc}
-              onChange={(e) => setFormData({...formData, thc: e.target.value})}
-              style={{
-                padding: '10px 12px',
-                background: 'rgba(255,255,255,0.1)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: 6,
-                color: '#fff'
-              }}
-            />
-            <input 
-              type="text" 
-              placeholder="CBD%" 
-              value={formData.cbd}
-              onChange={(e) => setFormData({...formData, cbd: e.target.value})}
-              style={{
-                padding: '10px 12px',
-                background: 'rgba(255,255,255,0.1)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: 6,
-                color: '#fff'
-              }}
-            />
+        <div className="admin-section-card" style={{ marginBottom: 24 }}>
+          <div className="admin-section-header">
+            <h2 className="admin-section-title">
+              {editingId ? '✏️ Modifier le Produit' : '✨ Nouveau Produit'}
+            </h2>
           </div>
+          <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
+            <div className="admin-form-grid" style={{ marginBottom: 16 }}>
+              <div className="admin-form-group">
+                <label className="admin-form-label">Nom du Produit *</label>
+                <input type="text" className="admin-form-input"
+                  placeholder="Ex: Fleur OG Kush" value={formData.name}
+                  onChange={set('name')} required />
+              </div>
+              <div className="admin-form-group">
+                <label className="admin-form-label">Slug *</label>
+                <input type="text" className="admin-form-input"
+                  placeholder="Ex: fleur-og-kush" value={formData.slug}
+                  onChange={set('slug')} required />
+              </div>
+              <div className="admin-form-group">
+                <label className="admin-form-label">Grade</label>
+                <input type="text" className="admin-form-input"
+                  placeholder="Ex: Premium" value={formData.grade}
+                  onChange={set('grade')} />
+              </div>
+              <div className="admin-form-group">
+                <label className="admin-form-label">Tier</label>
+                <input type="text" className="admin-form-input"
+                  placeholder="Ex: Elite" value={formData.tier}
+                  onChange={set('tier')} />
+              </div>
+              <div className="admin-form-group">
+                <label className="admin-form-label">THC %</label>
+                <input type="text" className="admin-form-input"
+                  placeholder="Ex: 20.5" value={formData.thc}
+                  onChange={set('thc')} />
+              </div>
+              <div className="admin-form-group">
+                <label className="admin-form-label">CBD %</label>
+                <input type="text" className="admin-form-input"
+                  placeholder="Ex: 0.2" value={formData.cbd}
+                  onChange={set('cbd')} />
+              </div>
+            </div>
 
-          <input 
-            type="text" 
-            placeholder="Type" 
-            value={formData.type}
-            onChange={(e) => setFormData({...formData, type: e.target.value})}
-            style={{
-              width: '100%',
-              padding: '10px 12px',
-              background: 'rgba(255,255,255,0.1)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: 6,
-              color: '#fff',
-              marginBottom: 16
-            }}
-          />
+            <div className="admin-form-group" style={{ marginBottom: 16 }}>
+              <label className="admin-form-label">Type</label>
+              <input type="text" className="admin-form-input"
+                placeholder="Ex: Fleur, Résine, Huile…" value={formData.type}
+                onChange={set('type')} />
+            </div>
 
-          <textarea 
-            placeholder="Description" 
-            value={formData.description}
-            onChange={(e) => setFormData({...formData, description: e.target.value})}
-            style={{
-              width: '100%',
-              padding: '10px 12px',
-              background: 'rgba(255,255,255,0.1)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: 6,
-              color: '#fff',
-              minHeight: 100,
-              marginBottom: 16
-            }}
-          />
+            <div className="admin-form-group" style={{ marginBottom: 20 }}>
+              <label className="admin-form-label">Description</label>
+              <textarea className="admin-form-textarea"
+                placeholder="Description complète du produit…" value={formData.description}
+                onChange={set('description')} />
+            </div>
 
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, color: '#fff' }}>
-            <input 
-              type="checkbox" 
-              checked={formData.active}
-              onChange={(e) => setFormData({...formData, active: e.target.checked})}
-              style={{ width: 18, height: 18 }}
-            />
-            Actif
-          </label>
+            <label className="admin-checkbox-label" style={{ marginBottom: 24 }}>
+              <input type="checkbox" checked={formData.active} onChange={setCheck('active')} />
+              Produit actif (visible sur la boutique)
+            </label>
 
-          <button type="submit" style={{
-            padding: '10px 20px',
-            background: '#9effa5',
-            border: 'none',
-            color: '#000',
-            borderRadius: 6,
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            marginRight: 12
-          }}>
-            {editingId ? '💾 Enregistrer' : 'Créer Produit'}
-          </button>
-          <button type="button" onClick={resetForm} style={{
-            padding: '10px 20px',
-            background: 'rgba(255,255,255,0.1)',
-            border: '1px solid rgba(255,255,255,0.2)',
-            color: '#fff',
-            borderRadius: 6,
-            cursor: 'pointer'
-          }}>
-            Annuler
-          </button>
-        </form>
+            <div className="admin-form-actions">
+              <button type="submit" disabled={saving} className="admin-btn admin-btn-primary">
+                {saving
+                  ? <><div className="admin-loading-spinner" style={{ width: 13, height: 13, borderWidth: 2 }} /> Enregistrement…</>
+                  : editingId ? '💾 Enregistrer' : '✓ Créer le Produit'
+                }
+              </button>
+              <button type="button" onClick={resetForm} className="admin-btn admin-btn-secondary">
+                Annuler
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-            <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Nom</th>
-            <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Slug</th>
-            <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Tier</th>
-            <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>État</th>
-            <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map(product => (
-            <tr key={product.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-              <td style={{ padding: 12, color: '#fff' }}>{product.name}</td>
-              <td style={{ padding: 12, color: 'rgba(255,255,255,0.6)', fontSize: 12 }}>{product.slug}</td>
-              <td style={{ padding: 12, color: 'rgba(255,255,255,0.6)' }}>{product.tier}</td>
-              <td style={{ padding: 12 }}>
-                <span style={{ color: product.active ? '#9effa5' : '#ba0b20', fontSize: 12 }}>
-                  {product.active ? '✓ Actif' : '✗ Inactif'}
-                </span>
-              </td>
-              <td style={{ padding: 12 }}>
-                <button 
-                  onClick={() => handleEdit(product)}
-                  style={{
-                    padding: '6px 12px',
-                    background: '#9effa5',
-                    border: 'none',
-                    borderRadius: 4,
-                    color: '#000',
-                    cursor: 'pointer',
-                    fontSize: 12,
-                    marginRight: 8
-                  }}
-                >
-                  ✎ Éditer
-                </button>
-                <button 
-                  onClick={() => handleDelete(product.id)}
-                  style={{
-                    padding: '6px 12px',
-                    background: '#ba0b20',
-                    border: 'none',
-                    borderRadius: 4,
-                    color: '#fff',
-                    cursor: 'pointer',
-                    fontSize: 12
-                  }}
-                >
-                  ✕ Supprimer
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* Table */}
+      <div className="admin-section-card">
+        <div className="admin-section-header">
+          <h2 className="admin-section-title">📋 Liste des Produits</h2>
+          <span style={{ fontSize: 12, color: 'var(--adm-text-muted)' }}>
+            {products.length} produit(s)
+          </span>
+        </div>
+
+        {loading ? (
+          <div className="admin-loading">
+            <div className="admin-loading-spinner" /> Chargement…
+          </div>
+        ) : products.length === 0 ? (
+          <div className="admin-table-empty">Aucun produit enregistré</div>
+        ) : (
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Slug</th>
+                <th>Tier</th>
+                <th>Type</th>
+                <th>État</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.map(product => (
+                <tr key={product.id}>
+                  <td style={{ fontWeight: 600 }}>{product.name}</td>
+                  <td>
+                    <span style={{ fontFamily: 'var(--adm-mono)', fontSize: 12, color: 'var(--adm-text-secondary)' }}>
+                      {product.slug}
+                    </span>
+                  </td>
+                  <td>{product.tier || '—'}</td>
+                  <td>{product.type || '—'}</td>
+                  <td>
+                    <span className={`admin-badge ${product.active ? 'admin-badge-success' : 'admin-badge-danger'}`}>
+                      {product.active ? 'Actif' : 'Inactif'}
+                    </span>
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={() => handleEdit(product)}
+                        className="admin-btn admin-btn-ghost"
+                        style={{ padding: '5px 12px', fontSize: 12 }}>
+                        ✏️ Éditer
+                      </button>
+                      <button onClick={() => handleDelete(product.id)}
+                        className="admin-btn admin-btn-danger"
+                        style={{ padding: '5px 12px', fontSize: 12 }}>
+                        🗑 Supprimer
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   )
 }

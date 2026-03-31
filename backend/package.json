@@ -31,7 +31,8 @@
     "joi": "^17.11.0",
     "stripe": "^14.18.0",
     "node-telegram-bot-api": "^0.64.0",
-    "axios": "^1.7.0"
+    "axios": "^1.7.0",
+    "express-fileupload": "^1.5.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

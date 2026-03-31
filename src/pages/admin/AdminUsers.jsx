@@ -1,163 +1,136 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
+import '../../styles/admin.css'
 
-export default function AdminUsers() {
-  const [users, setUsers] = useState([])
-  const [selectedUser, setSelectedUser] = useState(null)
-  const [userOrders, setUserOrders] = useState([])
+const navItems = [
+  { path: '/admin/dashboard', label: 'Dashboard',     icon: '📊' },
+  { path: '/admin/orders',    label: 'Commandes',     icon: '📦' },
+  { path: '/admin/products',  label: 'Produits',      icon: '🛍️' },
+  { path: '/admin/users',     label: 'Utilisateurs',  icon: '👥' },
+]
 
-  const fetchUsers = async () => {
-    try {
-      const token = localStorage.getItem('adminToken')
-      const res = await fetch('http://localhost:5000/api/admin/users', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      const data = await res.json()
-      setUsers(data)
-    } catch (err) {
-      console.error('Erreur fetch utilisateurs:', err)
-    }
-  }
+const pageTitles = {
+  '/admin/dashboard': 'Dashboard',
+  '/admin/orders':    'Gestion des Commandes',
+  '/admin/products':  'Gestion des Produits',
+  '/admin/users':     'Gestion des Utilisateurs',
+}
+
+export default function AdminLayout() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [activeLink, setActiveLink] = useState(location.pathname)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
-    fetchUsers()
-  }, [])
+    setActiveLink(location.pathname)
+    setSidebarOpen(false)
+  }, [location])
 
-  const handleViewUser = async (user) => {
-    setSelectedUser(user)
-    // Fetch user's orders
-    try {
-      const token = localStorage.getItem('adminToken')
-      const res = await fetch('http://localhost:5000/api/admin/orders', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      const allOrders = await res.json()
-      const orders = allOrders.filter(order => order.userId === user.id)
-      setUserOrders(orders)
-    } catch (err) {
-      console.error('Erreur fetch commandes utilisateur:', err)
-    }
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken')
+    navigate('/admin/login')
   }
 
-  if (selectedUser) {
-    return (
-      <div>
-        <button 
-          onClick={() => setSelectedUser(null)}
-          style={{
-            background: '#ba0b20',
-            color: '#fff',
-            border: 'none',
-            padding: '6px 12px',
-            borderRadius: 4,
-            cursor: 'pointer',
-            marginBottom: 16
-          }}
-        >
-          ← Retour aux utilisateurs
-        </button>
+  const currentTitle = pageTitles[location.pathname] || 'Admin Panel'
 
-        <div style={{ background: 'rgba(255,255,255,0.05)', padding: 20, borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', marginBottom: 24 }}>
-          <h2 style={{ color: '#fff', marginTop: 0 }}>Profil: {selectedUser.email}</h2>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <div>
-              <p style={{ color: 'rgba(255,255,255,0.6)', margin: '0 0 4px' }}>Email</p>
-              <p style={{ color: '#fff', margin: 0 }}>{selectedUser.email}</p>
-            </div>
-            <div>
-              <p style={{ color: 'rgba(255,255,255,0.6)', margin: '0 0 4px' }}>Téléphone</p>
-              <p style={{ color: '#fff', margin: 0 }}>{selectedUser.phone || '-'}</p>
-            </div>
-            <div>
-              <p style={{ color: 'rgba(255,255,255,0.6)', margin: '0 0 4px' }}>Rôle</p>
-              <p style={{ color: '#fff', margin: 0 }}>{selectedUser.role}</p>
-            </div>
-            <div>
-              <p style={{ color: 'rgba(255,255,255,0.6)', margin: '0 0 4px' }}>Inscrit</p>
-              <p style={{ color: '#fff', margin: 0 }}>
-                {new Date(selectedUser.createdAt).toLocaleDateString('fr-FR')}
-              </p>
-            </div>
+  const today = new Date().toLocaleDateString('fr-FR', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  })
+
+  return (
+    <div className="admin-container">
+      {/* Overlay mobile */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+            zIndex: 99, backdropFilter: 'blur(2px)'
+          }}
+        />
+      )}
+
+      {/* Sidebar */}
+      <nav className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`}>
+        {/* Brand */}
+        <div className="admin-sidebar-header">
+          <h2 className="admin-sidebar-title">GAS PASS</h2>
+          <p className="admin-sidebar-subtitle">Administration</p>
+        </div>
+
+        {/* Profile */}
+        <div className="admin-sidebar-profile">
+          <div className="admin-sidebar-avatar">👤</div>
+          <div className="admin-sidebar-profile-info">
+            <div className="admin-sidebar-name">Administrateur</div>
+            <div className="admin-sidebar-role">Super Admin</div>
           </div>
         </div>
 
-        <h3 style={{ color: '#fff', marginBottom: 12 }}>Commandes ({userOrders.length})</h3>
-        
-        {userOrders.length === 0 ? (
-          <p style={{ color: 'rgba(255,255,255,0.6)' }}>Aucune commande</p>
-        ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Commande</th>
-                <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Total</th>
-                <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Date</th>
-                <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Statut</th>
-              </tr>
-            </thead>
-            <tbody>
-              {userOrders.map(order => (
-                <tr key={order.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: 12, color: '#fff' }}>{order.orderNumber}</td>
-                  <td style={{ padding: 12, color: '#9effa5' }}>${order.total?.toFixed(2)}</td>
-                  <td style={{ padding: 12, color: 'rgba(255,255,255,0.6)' }}>
-                    {new Date(order.createdAt).toLocaleDateString('fr-FR')}
-                  </td>
-                  <td style={{ padding: 12, color: order.status === 'completed' ? '#9effa5' : '#ba0b20' }}>
-                    {order.status}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-    )
-  }
-
-  return (
-    <div>
-      <h1 style={{ color: '#fff', marginBottom: 24 }}>Gestion Utilisateurs ({users.length})</h1>
-      
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-            <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Email</th>
-            <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Téléphone</th>
-            <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Rôle</th>
-            <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Inscrit</th>
-            <th style={{ textAlign: 'left', padding: 12, color: 'rgba(255,255,255,0.7)' }}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map(user => (
-            <tr key={user.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-              <td style={{ padding: 12, color: '#fff' }}>{user.email}</td>
-              <td style={{ padding: 12, color: 'rgba(255,255,255,0.7)' }}>{user.phone || '-'}</td>
-              <td style={{ padding: 12, color: user.role === 'admin' ? '#9effa5' : '#fff' }}>{user.role}</td>
-              <td style={{ padding: 12, color: 'rgba(255,255,255,0.6)', fontSize: 12 }}>
-                {new Date(user.createdAt).toLocaleDateString('fr-FR')}
-              </td>
-              <td style={{ padding: 12 }}>
-                <button 
-                  onClick={() => handleViewUser(user)}
-                  style={{
-                    padding: '6px 12px',
-                    background: '#9effa5',
-                    border: 'none',
-                    borderRadius: 4,
-                    color: '#000',
-                    cursor: 'pointer',
-                    fontSize: 12
-                  }}
-                >
-                  Voir
-                </button>
-              </td>
-            </tr>
+        {/* Nav */}
+        <div className="admin-nav-section">Menu</div>
+        <ul className="admin-nav">
+          {navItems.map(item => (
+            <li key={item.path} className="admin-nav-item">
+              <Link
+                to={item.path}
+                className={`admin-nav-link ${activeLink === item.path ? 'active' : ''}`}
+              >
+                <span className="admin-nav-icon">{item.icon}</span>
+                {item.label}
+              </Link>
+            </li>
           ))}
-        </tbody>
-      </table>
+        </ul>
+
+        {/* Footer / logout */}
+        <div className="admin-sidebar-footer">
+          <button onClick={handleLogout} className="admin-logout-btn">
+            <span className="admin-nav-icon">🚪</span>
+            Déconnexion
+          </button>
+        </div>
+      </nav>
+
+      {/* Main */}
+      <main className="admin-main">
+        {/* Topbar */}
+        <div className="admin-topbar">
+          {/* Mobile menu toggle */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              style={{
+                display: 'none', background: 'none', border: 'none',
+                cursor: 'pointer', fontSize: 20, color: 'var(--adm-text-secondary)',
+                padding: 4
+              }}
+              className="admin-menu-toggle"
+            >
+              ☰
+            </button>
+            <h1 className="admin-topbar-title">{currentTitle}</h1>
+          </div>
+
+          <div className="admin-topbar-actions">
+            <span className="admin-topbar-date">
+              📅 {today}
+            </span>
+          </div>
+        </div>
+
+        {/* Page content */}
+        <div className="admin-content">
+          <Outlet />
+        </div>
+      </main>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .admin-menu-toggle { display: flex !important; }
+        }
+      `}</style>
     </div>
   )
 }
