@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom'
 import { CartProvider } from './context/CartContext'
 import Home from './pages/Home.jsx'
 import ShopCategoryPage from './pages/ShopCategoryPage.jsx'
@@ -16,7 +16,6 @@ import AdminOrders from './pages/admin/AdminOrders.jsx'
 import AdminProducts from './pages/admin/AdminProducts.jsx'
 import AdminUsers from './pages/admin/AdminUsers.jsx'
 
-// ✅ Layout avec Outlet pour rendre les pages enfants
 function PublicLayout() {
   return (
     <>
@@ -35,6 +34,8 @@ export default function App() {
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminLayout />}>
+            {/* Redirect /admin → /admin/dashboard */}
+            <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="orders" element={<AdminOrders />} />
             <Route path="products" element={<AdminProducts />} />

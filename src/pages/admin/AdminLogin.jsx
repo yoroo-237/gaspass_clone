@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Flame, Lock } from 'lucide-react'
 import '../../styles/admin.css'
 
 export default function AdminLogin() {
@@ -13,23 +14,20 @@ export default function AdminLogin() {
     e.preventDefault()
     setLoading(true)
     setError('')
-
     try {
       const res = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       })
-
       const data = await res.json()
-
       if (res.ok && data.user?.role === 'admin') {
         localStorage.setItem('adminToken', data.token)
         navigate('/admin/dashboard')
       } else {
-        setError('Identifiants invalides ou accès administrateur refusé.')
+        setError('Identifiants invalides ou accès admin refusé.')
       }
-    } catch (err) {
+    } catch {
       setError('Erreur de connexion. Vérifiez votre réseau.')
     } finally {
       setLoading(false)
@@ -37,16 +35,16 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="admin-login-page">
-      <div className="admin-login-card">
-        {/* Logo / brand */}
-        <div className="admin-login-logo">
-          <div className="admin-login-logo-icon">🔒</div>
+    <div className="admin-login-wrap">
+      <div className="admin-login-box">
+        <div className="admin-login-brand">
+          <div className="admin-login-logo">
+            <Flame size={28} />
+          </div>
           <h1 className="admin-login-title">GAS PASS</h1>
-          <p className="admin-login-subtitle">Connectez-vous à votre espace admin</p>
+          <p className="admin-login-sub">Espace Administration</p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleLogin} className="admin-form">
           <div className="admin-form-group">
             <label className="admin-form-label">Adresse email</label>
@@ -74,25 +72,23 @@ export default function AdminLogin() {
           </div>
 
           {error && (
-            <div className="admin-alert admin-alert-error">
-              ⚠️ {error}
-            </div>
+            <div className="admin-alert admin-alert-error">{error}</div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="admin-btn admin-btn-primary"
-            style={{ width: '100%', justifyContent: 'center', padding: '12px', marginTop: 4 }}
+            className="admin-btn admin-btn-navy"
+            style={{ width: '100%', justifyContent: 'center', padding: '13px', marginTop: 4 }}
           >
             {loading
-              ? <><div className="admin-loading-spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> Connexion…</>
-              : '→ Se connecter'
+              ? <><div className="admin-spinner" style={{ width: 15, height: 15, borderWidth: 2 }} /> Connexion…</>
+              : <><Lock size={15} /> Se connecter</>
             }
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: 24, fontSize: 12, color: 'var(--adm-text-muted)' }}>
+        <p style={{ textAlign: 'center', marginTop: 24, fontSize: 12, color: 'var(--text-light)' }}>
           Accès réservé aux administrateurs
         </p>
       </div>
