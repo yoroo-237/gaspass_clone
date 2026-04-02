@@ -548,13 +548,14 @@ export default function ProductDetailPage() {
         /* ── PROMO ── */
         .pp-promo {
           display: grid; grid-template-columns: 1fr 1fr;
-          max-width: 1200px; margin: 0 auto;
+          max-width: 1500px; margin: 0 auto;
           padding: 64px 40px 80px; gap: 60px;
           align-items: center;
         }
         .pp-promo-img-wrap {
           border-radius: 18px; overflow: hidden;
           aspect-ratio: 4 / 3; background: #1a1a2e;
+        
         }
         .pp-promo-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .pp-promo-text { display: flex; flex-direction: column; justify-content: center; }
@@ -727,7 +728,7 @@ export default function ProductDetailPage() {
         <section className="pp-promo">
           <div className="pp-promo-img-wrap">
             <img
-              src="/public/bags_promo.jpg"
+              src="/public/Ij0OCM150ZPBqzHfngae28PyYq8.png"
               alt="GasPass premium bags rated 87, 89, 91, 93"
             />
           </div>
