@@ -1,6 +1,7 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom'
 import { CartProvider } from './context/CartContext'
+import ScrollToTop from './components/ScrollToTop'
 import Home from './pages/Home.jsx'
 import ShopCategoryPage from './pages/ShopCategoryPage.jsx'
 import ProductDetailPage from './pages/ProductDetailPage.jsx'
@@ -30,11 +31,11 @@ export default function App() {
   return (
     <CartProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminLayout />}>
-            {/* Redirect /admin → /admin/dashboard */}
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="orders" element={<AdminOrders />} />
