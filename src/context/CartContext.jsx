@@ -44,7 +44,7 @@ export const CartProvider = ({ children }) => {
           weight,
           quantity,
           pricePerUnit: product.prices[weight],
-          image: product.image
+          image: product.image || (product.images && product.images[0]) || ''
         }
       ]
     })

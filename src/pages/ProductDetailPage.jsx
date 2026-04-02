@@ -1,246 +1,779 @@
-import React, { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import React, { useState, useCallback } from 'react'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import useCart from '../hooks/useCart'
-import useReveal from '../hooks/useReveal.js'
 
-const PRODUCTS_DB = {
-  'hitch-hiker':      { id: 1, name: 'HITCH HIKER',      grade: '91', tier: 'SUPREME',     color: '#9effa5', thc: '30%', cbd: '0.1%', type: 'Hybrid', lineage: 'Dosidos × Sherbert', terpenes: ['Limonene', 'Caryophyllene', 'Myrcene'], desc: 'A euphoric, full-body hybrid that hits from every angle. Dense frost-covered nugs with a sharp citrus nose that fades into a smooth earthy finish.', prices: { '3.5g': 12, '7g': 22, '14g': 40, '28g': 75, 'QP': 140, 'HP': 260, 'LB': 500 } },
-  'purple-lemonade':  { id: 2, name: 'PURPLE LEMONADE',  grade: '89', tier: 'PREMIUM',     color: '#cab171', thc: '26%', cbd: '0.2%', type: 'Indica', lineage: 'Purple Punch × Lemon OG', terpenes: ['Terpinolene', 'Ocimene', 'Myrcene'], desc: 'Deep purple hues and a punchy lemon aroma. Relaxing body effect with a clean, fruity exhale. Ideal for evening use.', prices: { '3.5g': 11, '7g': 20, '14g': 38, '28g': 70, 'QP': 130, 'HP': 240, 'LB': 450 } },
-  'sundae-driver':    { id: 3, name: 'SUNDAE DRIVER',    grade: '93', tier: 'HIGH OCTANE', color: '#ba0b20', thc: '33%', cbd: '0.1%', type: 'Hybrid', lineage: 'Fruity Pebbles OG × Grape Pie', terpenes: ['Caryophyllene', 'Limonene', 'Linalool'], desc: 'Creamy, dessert-like smoke with an insane terp profile. The kind of pack that makes the whole room stop and ask what you\'re smoking.', prices: { '3.5g': 13, '7g': 24, '14g': 45, '28g': 85, 'QP': 160, 'HP': 300, 'LB': 550 } },
-  'gelonade-smalls':  { id: 4, name: 'GELONADE SMALLS',  grade: '87', tier: 'REGULAR',     color: 'rgba(255,255,255,0.55)', thc: '22%', cbd: '0.3%', type: 'Sativa', lineage: 'Gelato 41 × Lemon Tree', terpenes: ['Limonene', 'Linalool', 'Myrcene'], desc: 'Budget-friendly smalls with a bright lemon-gelato nose. Excellent value for bulk buyers looking for a consistent daily driver.', prices: { '3.5g': 8, '7g': 15, '14g': 28, '28g': 50, 'QP': 90, 'HP': 160, 'LB': 300 } },
-  'permanent-marker': { id: 5, name: 'PERMANENT MARKER', grade: '93', tier: 'HIGH OCTANE', color: '#ba0b20', thc: '31%', cbd: '0.1%', type: 'Hybrid', lineage: 'Biscotti × Jealousy × Sherb Bx', terpenes: ['Caryophyllene', 'Limonene', 'Bisabolol'], desc: 'One of the most sought-after cuts of the season. Pungent, loud aroma with a complex flavor profile. Each nug is a statement.', prices: { '3.5g': 13, '7g': 24, '14g': 45, '28g': 85, 'QP': 160, 'HP': 300, 'LB': 550 } },
-  'biscotti-cake':    { id: 6, name: 'BISCOTTI CAKE',    grade: '91', tier: 'SUPREME',     color: '#9effa5', thc: '29%', cbd: '0.2%', type: 'Indica', lineage: 'Biscotti × Wedding Cake', terpenes: ['Caryophyllene', 'Myrcene', 'Limonene'], desc: 'Rich, doughy terps with a sugary exhale. Heavy indica effects that unwind the body without putting you on the couch.', prices: { '3.5g': 12, '7g': 22, '14g': 40, '28g': 75, 'QP': 140, 'HP': 260, 'LB': 500 } },
-}
+// ── PRODUCT DATA — all 19, slugs match ShopCategoryPage ──────────────────────
+const PRODUCTS = [
+  // 87 Regular
+  {
+    id: 1,
+    slug: 'gelonade-smalls',
+    name: 'GELONADE SMALLS',
+    badge: 'New',
+    strain: 'Sativa',
+    grade: '87 Regular',
+    thc: '22%',
+    prices: { '3.5g': 35, '7g': 65, '28g': 200 },
+    images: [
+      '/products/gelonade-smalls.jpg',
+      '/products/gelonade-smalls.jpg',
+      '/products/gelonade-smalls.jpg',
+    ],
+  },
+  {
+    id: 2,
+    slug: 'biscotti-cake',
+    name: 'BISCOTTI CAKE',
+    badge: 'New',
+    strain: 'Indica',
+    grade: '87 Regular',
+    thc: '24%',
+    prices: { '3.5g': 35, '7g': 65, '28g': 200 },
+    images: [
+      '/products/biscotti-cake.jpg',
+      '/products/biscotti-cake.jpg',
+      '/products/biscotti-cake.jpg',
+    ],
+  },
+  {
+    id: 3,
+    slug: 'sunset-sherbet',
+    name: 'SUNSET SHERBET',
+    badge: null,
+    strain: 'Hybrid',
+    grade: '87 Regular',
+    thc: '21%',
+    prices: { '3.5g': 35, '7g': 65, '28g': 200 },
+    images: [
+      '/products/sunset-sherbet.jpg',
+      '/products/sunset-sherbet.jpg',
+      '/products/sunset-sherbet.jpg',
+    ],
+  },
+  // 89 Premium
+  {
+    id: 4,
+    slug: 'purple-lemonade',
+    name: 'PURPLE LEMONADE',
+    badge: 'New',
+    strain: 'Indica',
+    grade: '89 Premium',
+    thc: '26%',
+    prices: { '3.5g': 45, '7g': 85, '28g': 260 },
+    images: [
+      'public/crE5g6o6sQNSWbWVCYXUHUktB1Y.jpg',
+      'public/crE5g6o6sQNSWbWVCYXUHUktB1Y_2.jpg',
+      'public/crE5g6o6sQNSWbWVCYXUHUktB1Y_3.jpg',
+    ],
+  },
+  {
+    id: 5,
+    slug: 'sundae-driver',
+    name: 'SUNDAE DRIVER',
+    badge: 'New',
+    strain: 'Hybrid',
+    grade: '89 Premium',
+    thc: '27%',
+    prices: { '3.5g': 45, '7g': 85, '28g': 260 },
+    images: [
+      'public/6dnHHpKmlxZ5iN3DroU9xjuMu1s.jpg',
+      'public/6dnHHpKmlxZ5iN3DroU9xjuMu1s_2.jpg',
+      'public/6dnHHpKmlxZ5iN3DroU9xjuMu1s_3.jpg',
+    ],
+  },
+  {
+    id: 6,
+    slug: 'mac-1',
+    name: 'MAC 1',
+    badge: null,
+    strain: 'Hybrid',
+    grade: '89 Premium',
+    thc: '25%',
+    prices: { '3.5g': 45, '7g': 85, '28g': 260 },
+    images: [
+      '/products/mac1.jpg',
+      '/products/mac1.jpg',
+      '/products/mac1.jpg',
+    ],
+  },
+  {
+    id: 7,
+    slug: 'permanent-marker',
+    name: 'PERMANENT MARKER',
+    badge: 'New',
+    strain: 'Hybrid',
+    grade: '89 Premium',
+    thc: '27%',
+    prices: { '3.5g': 45, '7g': 85, '28g': 260 },
+    images: [
+      'public/EZVdTIllwqZp3jRzDmQ87WGvg.jpg',
+      'public/EZVdTIllwqZp3jRzDmQ87WGvg_2.jpg',
+      'public/EZVdTIllwqZp3jRzDmQ87WGvg_3.jpg',
+    ],
+  },
+  // 91 Supreme
+  {
+    id: 8,
+    slug: 'hitch-hiker',
+    name: 'HITCH HIKER',
+    badge: 'New',
+    strain: 'Hybrid',
+    grade: '91 Supreme',
+    thc: '30%',
+    prices: { '3.5g': 55, '7g': 100, '28g': 320 },
+    images: [
+      'public/JZlZpcElgglkOzxiEgbXIpsYy4.jpg',
+      'public/JZlZpcElgglkOzxiEgbXIpsYy4_2.jpg',
+      'public/JZlZpcElgglkOzxiEgbXIpsYy4_3.jpg',
+    ],
+  },
+  {
+    id: 9,
+    slug: 'jealousy',
+    name: 'JEALOUSY',
+    badge: null,
+    strain: 'Hybrid',
+    grade: '91 Supreme',
+    thc: '29%',
+    prices: { '3.5g': 55, '7g': 100, '28g': 320 },
+    images: [
+      '/products/jealousy.jpg',
+      '/products/jealousy.jpg',
+      '/products/jealousy.jpg',
+    ],
+  },
+  {
+    id: 10,
+    slug: 'chemdog',
+    name: 'CHEMDOG',
+    badge: 'New',
+    strain: 'Sativa',
+    grade: '91 Supreme',
+    thc: '31%',
+    prices: { '3.5g': 55, '7g': 100, '28g': 320 },
+    images: [
+      '/products/chemdog.jpg',
+      '/products/chemdog.jpg',
+      '/products/chemdog.jpg',
+    ],
+  },
+  {
+    id: 11,
+    slug: 'berry-nebula',
+    name: 'BERRY NEBULA',
+    badge: null,
+    strain: 'Indica',
+    grade: '91 Supreme',
+    thc: '30%',
+    prices: { '3.5g': 55, '7g': 100, '28g': 320 },
+    images: [
+      '/products/berry-nebula.jpg',
+      '/products/berry-nebula.jpg',
+      '/products/berry-nebula.jpg',
+    ],
+  },
+  {
+    id: 12,
+    slug: 'jungle-juice',
+    name: 'JUNGLE JUICE',
+    badge: 'New',
+    strain: 'Sativa',
+    grade: '91 Supreme',
+    thc: '32%',
+    prices: { '3.5g': 55, '7g': 100, '28g': 320 },
+    images: [
+      '/products/jungle-juice.jpg',
+      '/products/jungle-juice.jpg',
+      '/products/jungle-juice.jpg',
+    ],
+  },
+  // 93 High Octane
+  {
+    id: 13,
+    slug: 'runtz-og',
+    name: 'RUNTZ OG',
+    badge: 'New',
+    strain: 'Hybrid',
+    grade: '93 High Octane',
+    thc: '34%',
+    prices: { '3.5g': 65, '7g': 120, '28g': 380 },
+    images: [
+      '/products/runtz-og.jpg',
+      '/products/runtz-og.jpg',
+      '/products/runtz-og.jpg',
+    ],
+  },
+  {
+    id: 14,
+    slug: 'exotic-zkittlez',
+    name: 'EXOTIC ZKITTLEZ',
+    badge: 'New',
+    strain: 'Indica',
+    grade: '93 High Octane',
+    thc: '33%',
+    prices: { '3.5g': 65, '7g': 120, '28g': 380 },
+    images: [
+      '/products/exotic-zkittlez.jpg',
+      '/products/exotic-zkittlez.jpg',
+      '/products/exotic-zkittlez.jpg',
+    ],
+  },
+  {
+    id: 15,
+    slug: 'wedding-cake-x',
+    name: 'WEDDING CAKE X',
+    badge: null,
+    strain: 'Hybrid',
+    grade: '93 High Octane',
+    thc: '35%',
+    prices: { '3.5g': 65, '7g': 120, '28g': 380 },
+    images: [
+      '/products/wedding-cake-x.jpg',
+      '/products/wedding-cake-x.jpg',
+      '/products/wedding-cake-x.jpg',
+    ],
+  },
+  {
+    id: 16,
+    slug: 'gary-payton',
+    name: 'GARY PAYTON',
+    badge: 'New',
+    strain: 'Hybrid',
+    grade: '93 High Octane',
+    thc: '33%',
+    prices: { '3.5g': 65, '7g': 120, '28g': 380 },
+    images: [
+      '/products/gary-payton.jpg',
+      '/products/gary-payton.jpg',
+      '/products/gary-payton.jpg',
+    ],
+  },
+  {
+    id: 17,
+    slug: 'purple-punch',
+    name: 'PURPLE PUNCH',
+    badge: 'New',
+    strain: 'Indica',
+    grade: '93 High Octane',
+    thc: '32%',
+    prices: { '3.5g': 65, '7g': 120, '28g': 380 },
+    images: [
+      '/products/purple-punch.jpg',
+      '/products/purple-punch.jpg',
+      '/products/purple-punch.jpg',
+    ],
+  },
+  {
+    id: 18,
+    slug: 'ice-cream-cake',
+    name: 'ICE CREAM CAKE',
+    badge: null,
+    strain: 'Hybrid',
+    grade: '93 High Octane',
+    thc: '34%',
+    prices: { '3.5g': 65, '7g': 120, '28g': 380 },
+    images: [
+      '/products/ice-cream-cake.jpg',
+      '/products/ice-cream-cake.jpg',
+      '/products/ice-cream-cake.jpg',
+    ],
+  },
+  {
+    id: 19,
+    slug: 'cereal-milk',
+    name: 'CEREAL MILK',
+    badge: 'New',
+    strain: 'Hybrid',
+    grade: '93 High Octane',
+    thc: '33%',
+    prices: { '3.5g': 65, '7g': 120, '28g': 380 },
+    images: [
+      '/products/cereal-milk.jpg',
+      '/products/cereal-milk.jpg',
+      '/products/cereal-milk.jpg',
+    ],
+  },
+]
 
-const WEIGHTS = ['3.5g', '7g', '14g', '28g', 'QP', 'HP', 'LB']
+const WEIGHTS = ['3.5g', '7g', '28g']
 
+// ── PAGE ─────────────────────────────────────────────────────────────────────
 export default function ProductDetailPage() {
-  const { id } = useParams()
-  const [selectedWeight, setSelectedWeight] = useState('7g')
-  const [added, setAdded] = useState(false)
+  const { id } = useParams()           // id = slug, e.g. "hitch-hiker"
+  const navigate = useNavigate()
   const { addToCart } = useCart()
 
-  const product = PRODUCTS_DB[id] || Object.values(PRODUCTS_DB)[0]
+  const product = PRODUCTS.find((p) => p.slug === id)
 
-  const titleRef = useReveal(0.2)
-  const infoRef = useReveal(0.15)
+  const [activeImg, setActiveImg]           = useState(0)
+  const [selectedWeight, setSelectedWeight] = useState('3.5g')
+  const [qty, setQty]                       = useState(1)
+  const [expanded, setExpanded]             = useState(false)
+  const [addedToCart, setAddedToCart]       = useState(false)
+
+  const images = product?.images ?? []
+  const price  = product?.prices?.[selectedWeight] ?? 0
+
+  const decrement = useCallback(() => setQty((q) => Math.max(1, q - 1)), [])
+  const increment = useCallback(() => setQty((q) => q + 1), [])
 
   const handleAddToCart = () => {
-    const price = product.prices[selectedWeight]
-    addToCart(product, selectedWeight, 1)
-    setAdded(true)
-    setTimeout(() => setAdded(false), 2000)
+    if (!product) return
+    // CartContext.addToCart(product, weight, quantity)
+    // product must have: id, name, prices{weight: price}, images[0] as image
+    const productForCart = {
+      ...product,
+      image: product.images[0],
+    }
+    addToCart(productForCart, selectedWeight, qty)
+    setAddedToCart(true)
+    setTimeout(() => setAddedToCart(false), 2000)
+    // Open the cart modal via custom event
+    window.dispatchEvent(new CustomEvent('gp:open-cart'))
+  }
+
+  // Related products: all except current, max 4
+  const related = PRODUCTS.filter((p) => p.slug !== id).slice(0, 4)
+
+  if (!product) {
+    return (
+      <div style={{ padding: '120px 40px', textAlign: 'center', fontFamily: 'sans-serif' }}>
+        <h2>Product not found.</h2>
+        <p style={{ color: '#777', marginBottom: 24 }}>
+          The product you're looking for doesn't exist or the link may be incorrect.
+        </p>
+        <button
+          onClick={() => navigate('/shop')}
+          style={{ marginTop: 8, padding: '12px 28px', cursor: 'pointer', fontSize: 15, background: '#111', color: '#fff', border: 'none', borderRadius: 8 }}
+        >
+          ← Back to Shop
+        </button>
+      </div>
+    )
   }
 
   return (
-    <main style={{ paddingTop: 68, minHeight: '100vh' }}>
+    <>
+      {/* Police pixel VT323 */}
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
+      />
 
-      {/* Breadcrumb */}
-      <div style={{ padding: '24px 24px 0', maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', display: 'flex', gap: 8, alignItems: 'center' }}>
-          <Link to="/shop/categories/all" style={{ color: 'rgba(255,255,255,0.3)', textDecoration: 'none' }}>Shop</Link>
-          <span>/</span>
-          <Link to={`/shop/categories/${product.grade}`} style={{ color: 'rgba(255,255,255,0.3)', textDecoration: 'none' }}>{product.tier}</Link>
-          <span>/</span>
-          <span style={{ color: '#fff' }}>{product.name}</span>
-        </div>
+      <style>{`
+        .pp-root * { box-sizing: border-box; }
+        .pp-root {
+          font-family: 'Helvetica Neue', Arial, sans-serif;
+          color: #111;
+          background: #fff;
+          min-height: 100vh;
+        }
+
+        /* ── BREADCRUMB ── */
+        .pp-info-breadcrumb {
+          font-size: 13px;
+          color: #999;
+          margin-bottom: 16px;
+          display: flex;
+          gap: 6px;
+          align-items: center;
+        }
+        .pp-info-breadcrumb a,
+        .pp-info-breadcrumb button {
+          background: none; border: none; cursor: pointer;
+          color: #999; font-size: 13px; padding: 0;
+          font-family: inherit; text-decoration: none;
+        }
+        .pp-info-breadcrumb a:hover,
+        .pp-info-breadcrumb button:hover { color: #111; }
+
+        /* ── MAIN LAYOUT ── */
+        .pp-main {
+          display: grid;
+          grid-template-columns: 80px 1fr 1fr;
+          gap: 24px;
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 120px 40px 60px;
+        }
+
+        /* ── THUMBNAILS ── */
+        .pp-thumbs {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          padding-top: 4px;
+        }
+        .pp-thumb {
+          width: 72px; height: 72px;
+          border-radius: 8px; overflow: hidden;
+          cursor: pointer;
+          border: 2px solid transparent;
+          transition: border-color 0.2s;
+          background: #eee; flex-shrink: 0; padding: 0;
+        }
+        .pp-thumb.active { border-color: #111; }
+        .pp-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        /* ── IMAGE PRINCIPALE ── */
+        .pp-gallery {
+          border-radius: 18px; overflow: hidden;
+          background: #e8e0d0; aspect-ratio: 1 / 1;
+        }
+        .pp-gallery img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 0.3s; }
+
+        /* ── PANNEAU DROIT ── */
+        .pp-info { padding: 8px 0 0 16px; }
+        .pp-grade-badge {
+          display: inline-block;
+          background: #f5f0e8;
+          color: #8a6a2a;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 4px 12px;
+          border-radius: 999px;
+          margin-bottom: 12px;
+        }
+        .pp-product-title {
+          font-size: clamp(26px, 3vw, 42px);
+          font-weight: 700;
+          letter-spacing: -0.01em;
+          margin: 0 0 10px;
+          line-height: 1.1;
+        }
+        .pp-price {
+          font-size: 18px; font-weight: 400;
+          color: #111; margin-bottom: 20px;
+        }
+        .pp-short-desc {
+          font-size: 14px; color: #333;
+          margin-bottom: 6px; font-weight: 500;
+        }
+        .pp-readmore {
+          display: flex; align-items: center; gap: 6px;
+          background: none; border: none; cursor: pointer;
+          font-size: 14px; color: #111; font-weight: 500;
+          padding: 0; font-family: inherit; margin-bottom: 28px;
+        }
+        .pp-readmore-icon {
+          font-size: 16px; line-height: 1; display: inline-block;
+          transition: transform 0.2s;
+        }
+        .pp-readmore-icon.open { transform: rotate(45deg); }
+        .pp-readmore-body {
+          font-size: 13px; color: #555;
+          line-height: 1.6; margin-bottom: 20px;
+        }
+
+        /* WEIGHT SELECTOR */
+        .pp-amount-label {
+          font-size: 13px; font-weight: 600;
+          letter-spacing: 0.05em; color: #111;
+          margin-bottom: 12px;
+          display: flex; gap: 8px; align-items: center;
+        }
+        .pp-amount-label span { font-weight: 400; color: #777; }
+        .pp-amounts {
+          display: flex; flex-wrap: wrap;
+          gap: 8px; margin-bottom: 28px;
+        }
+        .pp-amount-btn {
+          padding: 9px 20px;
+          border-radius: 8px;
+          border: 1.5px solid #e0e0e0;
+          background: #fff;
+          font-size: 14px; font-weight: 500;
+          cursor: pointer; color: #111;
+          font-family: inherit;
+          transition: border-color 0.15s;
+        }
+        .pp-amount-btn:hover { border-color: #999; }
+        .pp-amount-btn.selected { border-color: #111; font-weight: 700; }
+
+        /* QTY + ADD */
+        .pp-actions { display: flex; gap: 12px; align-items: center; }
+        .pp-qty {
+          display: flex; align-items: center; gap: 16px;
+          border: 1.5px solid #e0e0e0; border-radius: 50px;
+          padding: 0 16px; height: 52px; min-width: 110px;
+          justify-content: space-between;
+        }
+        .pp-qty-btn {
+          background: none; border: none; cursor: pointer;
+          font-size: 20px; color: #111; padding: 0;
+          line-height: 1; font-family: inherit;
+          width: 20px; text-align: center;
+        }
+        .pp-qty-btn:hover { opacity: 0.6; }
+        .pp-qty-num { font-size: 16px; font-weight: 500; min-width: 20px; text-align: center; }
+
+        .pp-add-btn {
+          flex: 1; height: 52px;
+          background: #111; color: #fff;
+          border: none; border-radius: 50px;
+          font-size: 16px; font-weight: 600;
+          cursor: pointer; font-family: inherit;
+          letter-spacing: 0.01em;
+          transition: background 0.2s;
+          position: relative; overflow: hidden;
+        }
+        .pp-add-btn:hover { background: #333; }
+        .pp-add-btn.added { background: #2d8c4e; }
+
+        /* Cart success toast */
+        .pp-toast {
+          position: fixed; bottom: 32px; left: 50%;
+          transform: translateX(-50%) translateY(120px);
+          background: #111; color: #fff;
+          padding: 14px 28px; border-radius: 999px;
+          font-size: 15px; font-weight: 500;
+          z-index: 9999;
+          transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+          white-space: nowrap;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .pp-toast.visible {
+          transform: translateX(-50%) translateY(0);
+        }
+
+        /* ── DIVIDER ── */
+        .pp-divider {
+          max-width: 1200px; margin: 0 auto;
+          padding: 0 40px; border: none;
+          border-top: 1px solid #e8e8e8;
+        }
+
+        /* ── PROMO ── */
+        .pp-promo {
+          display: grid; grid-template-columns: 1fr 1fr;
+          max-width: 1200px; margin: 0 auto;
+          padding: 64px 40px 80px; gap: 60px;
+          align-items: center;
+        }
+        .pp-promo-img-wrap {
+          border-radius: 18px; overflow: hidden;
+          aspect-ratio: 4 / 3; background: #1a1a2e;
+        }
+        .pp-promo-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .pp-promo-text { display: flex; flex-direction: column; justify-content: center; }
+        .pp-promo-heading {
+          font-family: 'VT323', monospace;
+          font-size: clamp(48px, 5.5vw, 74px);
+          font-weight: 400; line-height: 1.05;
+          color: #111; margin: 0 0 28px;
+          letter-spacing: 0.01em;
+          -webkit-font-smoothing: none;
+        }
+        .pp-promo-body { font-size: 15px; color: #555; line-height: 1.7; margin: 0; max-width: 480px; }
+
+        /* ── BROWSE MORE ── */
+        .pp-browse { max-width: 1200px; margin: 0 auto; padding: 48px 40px 80px; }
+        .pp-browse-title { font-size: clamp(22px, 3vw, 32px); font-weight: 700; margin: 0 0 28px; letter-spacing: -0.01em; }
+        .pp-browse-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        .pp-browse-card { cursor: pointer; }
+        .pp-browse-img-wrap {
+          width: 100%; aspect-ratio: 1 / 1;
+          border-radius: 14px; overflow: hidden;
+          background: #e8e0d0; position: relative; margin-bottom: 12px;
+        }
+        .pp-browse-badge {
+          position: absolute; top: 12px; left: 12px;
+          font-size: 12px; font-weight: 500; color: #1a1a1a;
+          background: #c8a96e; padding: 4px 12px;
+          border-radius: 30px; z-index: 2;
+        }
+        .pp-browse-img-wrap img {
+          width: 100%; height: 100%; object-fit: cover;
+          display: block; transition: transform 0.35s;
+        }
+        .pp-browse-card:hover .pp-browse-img-wrap img { transform: scale(1.04); }
+        .pp-browse-name { font-size: 14px; font-weight: 700; letter-spacing: 0.04em; margin: 0 0 4px; color: #111; }
+        .pp-browse-strain { font-size: 12px; color: #777; margin: 0; font-weight: 400; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 900px) {
+          .pp-main {
+            grid-template-columns: 1fr;
+            padding: 90px 16px 40px;
+            gap: 16px;
+          }
+          .pp-thumbs { flex-direction: row; gap: 8px; padding-top: 0; }
+          .pp-thumb { width: 60px; height: 60px; }
+          .pp-info { padding: 0; }
+          .pp-info-breadcrumb { display: none; }
+          .pp-browse-grid { grid-template-columns: repeat(2, 1fr); }
+          .pp-browse { padding: 32px 16px 60px; }
+          .pp-divider { padding: 0 16px; }
+          .pp-promo {
+            grid-template-columns: 1fr;
+            padding: 48px 16px 60px; gap: 32px;
+          }
+          .pp-promo-heading { font-size: clamp(44px, 10vw, 64px); }
+        }
+        @media (max-width: 480px) {
+          .pp-actions { flex-direction: column; }
+          .pp-add-btn { width: 100%; }
+          .pp-qty { width: 100%; }
+        }
+      `}</style>
+
+      {/* Cart added toast */}
+      <div className={`pp-toast${addedToCart ? ' visible' : ''}`}>
+        ✓ Added to cart — {product.name} ({selectedWeight})
       </div>
 
-      {/* Product layout */}
-      <section style={{ padding: '48px 24px 100px' }}>
-        <div style={{
-          maxWidth: 1200, margin: '0 auto',
-          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80,
-          alignItems: 'start',
-        }}>
+      <div className="pp-root">
 
-          {/* Left: visual */}
-          <div ref={titleRef} className="reveal">
-            <div style={{
-              aspectRatio: '1',
-              background: `radial-gradient(circle at 55% 40%, ${product.color}20 0%, rgba(26,10,11,0.9) 65%)`,
-              border: '1px solid rgba(255,255,255,0.07)',
-              borderRadius: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              position: 'relative', overflow: 'hidden',
-            }}>
-              {/* Grade watermark */}
-              <div style={{
-                position: 'absolute', top: 20, left: 20,
-                fontFamily: 'var(--font-pixel)',
-                fontSize: 'clamp(60px, 14vw, 120px)',
-                color: `${product.color}10`,
-                lineHeight: 1, userSelect: 'none',
-                pointerEvents: 'none',
-              }}>
-                {product.grade}
-              </div>
+        {/* 1 ── Main grid: thumbs | image | info */}
+        <div className="pp-main">
 
-              {/* Center flower icon */}
-              <svg width="120" height="120" viewBox="0 0 64 64" fill="none" opacity="0.2">
-                <ellipse cx="32" cy="32" rx="18" ry="28" fill={product.color} transform="rotate(0 32 32)"/>
-                <ellipse cx="32" cy="32" rx="18" ry="28" fill={product.color} transform="rotate(60 32 32)"/>
-                <ellipse cx="32" cy="32" rx="18" ry="28" fill={product.color} transform="rotate(120 32 32)"/>
-                <circle cx="32" cy="32" r="8" fill={product.color}/>
-              </svg>
-
-              {/* Tier badge */}
-              <div style={{
-                position: 'absolute', bottom: 20, right: 20,
-                fontFamily: 'var(--font-pixel)',
-                fontSize: 7, color: product.color,
-                border: `1px solid ${product.color}44`,
-                padding: '7px 12px', borderRadius: 2,
-                background: `${product.color}10`,
-                letterSpacing: '0.12em',
-              }}>
-                {product.tier}
-              </div>
-            </div>
-
-            {/* Terpenes */}
-            <div style={{ marginTop: 24 }}>
-              <div style={{
-                fontFamily: 'var(--font-pixel)',
-                fontSize: 7, color: 'rgba(255,255,255,0.3)',
-                letterSpacing: '0.2em', marginBottom: 12,
-              }}>TERPENES</div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {product.terpenes.map(t => (
-                  <span key={t} style={{
-                    fontSize: 12, color: 'rgba(255,255,255,0.5)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    padding: '5px 12px', borderRadius: 20,
-                  }}>{t}</span>
-                ))}
-              </div>
-            </div>
+          {/* Thumbnails */}
+          <div className="pp-thumbs">
+            {images.map((src, i) => (
+              <button
+                key={i}
+                className={`pp-thumb${activeImg === i ? ' active' : ''}`}
+                onClick={() => setActiveImg(i)}
+              >
+                <img src={src} alt={`${product.name} ${i + 1}`} />
+              </button>
+            ))}
           </div>
 
-          {/* Right: info */}
-          <div ref={infoRef} className="reveal" style={{ paddingTop: 12 }}>
-            {/* Grade + type */}
-            <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-              <span style={{
-                fontFamily: 'var(--font-pixel)', fontSize: 8,
-                color: product.color, border: `1px solid ${product.color}44`,
-                padding: '5px 12px', borderRadius: 2, background: `${product.color}0f`,
-              }}>{product.grade}</span>
-              <span style={{
-                fontFamily: 'var(--font-pixel)', fontSize: 8,
-                color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.1)',
-                padding: '5px 12px', borderRadius: 2,
-              }}>{product.type.toUpperCase()}</span>
+          {/* Main image */}
+          <div className="pp-gallery">
+            {images[activeImg] && (
+              <img src={images[activeImg]} alt={product.name} key={activeImg} />
+            )}
+          </div>
+
+          {/* Info panel */}
+          <div className="pp-info">
+            <nav className="pp-info-breadcrumb">
+              <Link to="/">Home</Link>
+              <span>/</span>
+              <Link to="/shop">Shop</Link>
+              <span>/</span>
+              <span style={{ color: '#111' }}>{product.name}</span>
+            </nav>
+
+            {product.grade && (
+              <span className="pp-grade-badge">{product.grade} · THC {product.thc}</span>
+            )}
+
+            <h1 className="pp-product-title">{product.name}</h1>
+            <p className="pp-price">${price}.00 USD</p>
+
+            <p className="pp-short-desc">{product.strain} strain — {product.grade}</p>
+
+            <button
+              className="pp-readmore"
+              onClick={() => setExpanded((v) => !v)}
+            >
+              <span className={`pp-readmore-icon${expanded ? ' open' : ''}`}>+</span>
+              Read more
+            </button>
+
+            {expanded && (
+              <div className="pp-readmore-body">
+                <p>
+                  {product.name} is a premium {product.strain.toLowerCase()} strain from
+                  the {product.grade} tier, with {product.thc} THC. Known for its
+                  exceptional aroma, dense structure, and consistent quality. Every batch
+                  is lab-tested, hand-trimmed, and packed with potency and flavor.
+                  Perfect for both connoisseurs and everyday enthusiasts.
+                </p>
+              </div>
+            )}
+
+            {/* Weight selector */}
+            <div className="pp-amount-label">
+              WEIGHT <span>{selectedWeight}</span>
             </div>
-
-            {/* Name */}
-            <h1 style={{
-              fontFamily: 'var(--font-pixel)',
-              fontSize: 'clamp(18px, 3vw, 30px)',
-              color: '#fff', lineHeight: 1.5,
-              letterSpacing: '0.04em', marginBottom: 12,
-            }}>
-              {product.name}
-            </h1>
-
-            {/* Lineage */}
-            <div style={{
-              fontSize: 13, color: 'rgba(255,255,255,0.35)',
-              marginBottom: 28, letterSpacing: '0.03em',
-            }}>
-              {product.lineage}
-            </div>
-
-            {/* THC/CBD */}
-            <div style={{ display: 'flex', gap: 32, marginBottom: 32 }}>
-              {[{ label: 'THC', value: product.thc }, { label: 'CBD', value: product.cbd }].map(s => (
-                <div key={s.label}>
-                  <div style={{
-                    fontFamily: 'var(--font-pixel)', fontSize: 7,
-                    color: 'rgba(255,255,255,0.3)', letterSpacing: '0.2em', marginBottom: 6,
-                  }}>{s.label}</div>
-                  <div style={{
-                    fontFamily: 'var(--font-pixel)', fontSize: 20, color: product.color,
-                  }}>{s.value}</div>
-                </div>
+            <div className="pp-amounts">
+              {WEIGHTS.map((w) => (
+                <button
+                  key={w}
+                  className={`pp-amount-btn${selectedWeight === w ? ' selected' : ''}`}
+                  onClick={() => setSelectedWeight(w)}
+                >
+                  {w}
+                </button>
               ))}
             </div>
 
-            {/* Description */}
-            <p style={{
-              fontSize: 14, lineHeight: 1.95,
-              color: 'rgba(255,255,255,0.6)',
-              marginBottom: 36,
-              paddingBottom: 36,
-              borderBottom: '1px solid rgba(255,255,255,0.07)',
-            }}>
-              {product.desc}
-            </p>
-
-            {/* Weight selector */}
-            <div style={{ marginBottom: 24 }}>
-              <div style={{
-                fontFamily: 'var(--font-pixel)', fontSize: 7,
-                color: 'rgba(255,255,255,0.3)', letterSpacing: '0.2em', marginBottom: 14,
-              }}>SELECT WEIGHT</div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {WEIGHTS.map(w => (
-                  <button
-                    key={w}
-                    onClick={() => setSelectedWeight(w)}
-                    style={{
-                      fontFamily: 'var(--font-pixel)', fontSize: 8,
-                      padding: '10px 16px', borderRadius: 4, cursor: 'pointer',
-                      transition: 'all 0.2s', letterSpacing: '0.08em',
-                      background: selectedWeight === w ? product.color : 'transparent',
-                      color: selectedWeight === w ? '#000' : 'rgba(255,255,255,0.45)',
-                      border: selectedWeight === w
-                        ? `1px solid ${product.color}`
-                        : '1px solid rgba(255,255,255,0.12)',
-                    }}
-                  >{w}</button>
-                ))}
+            {/* Qty + Add to Cart */}
+            <div className="pp-actions">
+              <div className="pp-qty">
+                <button className="pp-qty-btn" onClick={decrement}>−</button>
+                <span className="pp-qty-num">{qty}</span>
+                <button className="pp-qty-btn" onClick={increment}>+</button>
               </div>
+              <button
+                className={`pp-add-btn${addedToCart ? ' added' : ''}`}
+                onClick={handleAddToCart}
+              >
+                {addedToCart ? '✓ Added!' : 'Add to Cart'}
+              </button>
             </div>
-
-            {/* CTA */}
-            <button
-              onClick={handleAddToCart}
-              style={{
-                width: '100%',
-                fontFamily: 'var(--font-pixel)', fontSize: 10,
-                color: added ? '#000' : '#000',
-                background: added ? '#9effa5' : product.color,
-                border: 'none', borderRadius: 4,
-                padding: '18px 32px',
-                cursor: 'pointer',
-                letterSpacing: '0.1em',
-                transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
-                transform: added ? 'scale(0.98)' : 'scale(1)',
-              }}
-            >
-              {added ? '✓ ADDED TO CART' : `ADD ${selectedWeight} TO CART`}
-            </button>
-
-            <p style={{
-              fontSize: 12, color: 'rgba(255,255,255,0.25)',
-              textAlign: 'center', marginTop: 12, lineHeight: 1.7,
-            }}>
-              Contact us via Telegram or Signal to complete your order.
-              Stealthy packaging guaranteed.
-            </p>
           </div>
         </div>
-      </section>
 
-      <style>{`
-        @media (max-width: 768px) {
-          main > section > div {
-            grid-template-columns: 1fr !important;
-            gap: 40px !important;
-          }
-        }
-      `}</style>
-    </main>
+        <hr className="pp-divider" />
+
+        {/* 2 ── Promo section */}
+        <section className="pp-promo">
+          <div className="pp-promo-img-wrap">
+            <img
+              src="/public/bags_promo.jpg"
+              alt="GasPass premium bags rated 87, 89, 91, 93"
+            />
+          </div>
+          <div className="pp-promo-text">
+            <h2 className="pp-promo-heading">
+              This Is the<br />
+              Gas You've<br />
+              Been Waiting<br />
+              For
+            </h2>
+            <p className="pp-promo-body">
+              When you're buying, you need more than hype — you need consistency,
+              potency, and real quality you can count on. At GasPass, every batch we
+              deliver is lab-tested, hand-trimmed, and packed with the kind of nose,
+              stickiness, and structure that keeps customers coming back.
+            </p>
+          </div>
+        </section>
+
+        <hr className="pp-divider" />
+
+        {/* 3 ── Browse more */}
+        <section className="pp-browse">
+          <h2 className="pp-browse-title">Browse more</h2>
+          <div className="pp-browse-grid">
+            {related.map((p) => (
+              <div
+                key={p.slug}
+                className="pp-browse-card"
+                onClick={() => {
+                  navigate(`/shop/${p.slug}`)
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }}
+              >
+                <div className="pp-browse-img-wrap">
+                  {p.badge && <span className="pp-browse-badge">{p.badge}</span>}
+                  <img src={p.images[0]} alt={p.name} />
+                </div>
+                <p className="pp-browse-name">{p.name}</p>
+                <p className="pp-browse-strain">{p.strain}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+      </div>
+    </>
   )
 }
