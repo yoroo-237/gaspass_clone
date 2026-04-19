@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/db.js';
+import Category from './Category.js';
 
 const Product = sequelize.define('Product', {
   name: { type: DataTypes.STRING, allowNull: false },
@@ -12,11 +13,16 @@ const Product = sequelize.define('Product', {
   type: { type: DataTypes.STRING },
   lineage: { type: DataTypes.STRING },
   terpenes: { type: DataTypes.ARRAY(DataTypes.STRING) },
+  tags: { type: DataTypes.ARRAY(DataTypes.STRING), defaultValue: [] },
   description: { type: DataTypes.TEXT },
   stock: { type: DataTypes.JSONB },
   pricing: { type: DataTypes.JSONB },
   images: { type: DataTypes.ARRAY(DataTypes.STRING) },
-  active: { type: DataTypes.BOOLEAN, defaultValue: true }
+  active: { type: DataTypes.BOOLEAN, defaultValue: true },
+  categoryId: { type: DataTypes.INTEGER, allowNull: true }
 });
+
+Product.belongsTo(Category, { foreignKey: 'categoryId', as: 'category' });
+Category.hasMany(Product, { foreignKey: 'categoryId', as: 'products' });
 
 export default Product;

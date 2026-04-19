@@ -6,6 +6,13 @@ import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import { verifyToken } from '../middleware/auth.js';
 import logger from '../utils/logger.js';
+import { notifyClient, notifyAdmin } from '../services/telegramService.js';
+import {
+  msgCommandeClient,
+  msgNouvelleCommandeAdmin,
+  msgStatutClient,
+  msgAnnulationAdmin
+} from '../utils/telegramMessages.js';
 
 const router = express.Router();
 
@@ -155,6 +162,13 @@ router.post('/', async (req, res) => {
     }
 
     await transaction.commit();
+
+    // Notifications (non bloquantes — on ne attend pas)
+    notifyAdmin(msgNouvelleCommandeAdmin(order)).catch(() => {});
+    if (order.userId) {
+      notifyClient(order.userId, msgCommandeClient(order)).catch(() => {});
+    }
+
     logger.info(`Commande créée: ${order.orderNumber} — total: ${order.total}`);
     res.status(201).json(order);
 
@@ -229,6 +243,11 @@ router.put('/:id/status', verifyToken, async (req, res) => {
 
     await order.update({ status: 'cancelled' }, { transaction });
     await transaction.commit();
+
+    // Notifier le client de l'annulation
+    if (order.userId) {
+      notifyClient(order.userId, msgStatutClient({ ...order.dataValues, status: 'cancelled' })).catch(() => {});
+    }
 
     logger.info(`Commande annulée: ${order.orderNumber} — stock restauré`);
     res.json({ message: 'Commande annulée et stock restauré' });

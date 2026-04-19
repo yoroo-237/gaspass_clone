@@ -3,10 +3,19 @@ import jwt from 'jsonwebtoken';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import User from '../models/User.js';
+import AdminLog from '../models/AdminLog.js';
 import { verifyAdmin } from '../middleware/auth.js';
+import { logAdminAction } from '../middleware/adminLogger.js';
 import sequelize from '../config/db.js';
 import { Op } from 'sequelize';
 import logger from '../utils/logger.js';
+import { notifyClient, notifyAdmin } from '../services/telegramService.js';
+import {
+  msgStatutClient,
+  msgRemboursementAdmin,
+  msgAnnulationAdmin
+} from '../utils/telegramMessages.js';
+import { Parser } from 'json2csv';
 
 const router = express.Router();
 
@@ -32,29 +41,173 @@ const validateOrder = (data) => {
 // GET /api/admin/dashboard
 router.get('/dashboard', verifyAdmin, async (req, res) => {
   try {
-    const totalOrders = await Order.count();
-    const totalRevenue = await Order.sum('total', { where: { paymentStatus: 'completed' } }) || 0;
-    const totalUsers = await User.count();
-    const todayOrders = await Order.count({ 
-      where: { createdAt: { [Op.gte]: new Date(Date.now() - 24*60*60*1000) } } 
+    const { period = '30d' } = req.query;
+
+    // Calculer la date de début selon la période
+    const periodMap = {
+      '7d':  7,
+      '30d': 30,
+      '90d': 90,
+      '1y':  365
+    };
+    const days = periodMap[period] || 30;
+    const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const prevStartDate = new Date(startDate.getTime() - days * 24 * 60 * 60 * 1000);
+
+    // ── Stats globales ──────────────────────────────────────────────
+    const [
+      totalOrders,
+      totalRevenue,
+      totalUsers,
+      todayOrders,
+      pendingOrders,
+      // Période actuelle
+      periodOrders,
+      periodRevenue,
+      // Période précédente (pour comparaison)
+      prevPeriodOrders,
+      prevPeriodRevenue
+    ] = await Promise.all([
+      Order.count(),
+      Order.sum('total', { where: { paymentStatus: 'completed' } }),
+      User.count(),
+      Order.count({
+        where: { createdAt: { [Op.gte]: new Date(Date.now() - 24 * 60 * 60 * 1000) } }
+      }),
+      Order.count({ where: { status: 'pending' } }),
+      Order.count({ where: { createdAt: { [Op.gte]: startDate } } }),
+      Order.sum('total', {
+        where: { paymentStatus: 'completed', createdAt: { [Op.gte]: startDate } }
+      }),
+      Order.count({
+        where: { createdAt: { [Op.gte]: prevStartDate, [Op.lt]: startDate } }
+      }),
+      Order.sum('total', {
+        where: {
+          paymentStatus: 'completed',
+          createdAt: { [Op.gte]: prevStartDate, [Op.lt]: startDate }
+        }
+      })
+    ]);
+
+    // ── Revenus par jour sur la période ────────────────────────────
+    const revenueByDay = await Order.findAll({
+      attributes: [
+        [sequelize.fn('DATE', sequelize.col('created_at')), 'date'],
+        [sequelize.fn('SUM', sequelize.col('total')), 'revenue'],
+        [sequelize.fn('COUNT', sequelize.col('id')), 'orders']
+      ],
+      where: {
+        paymentStatus: 'completed',
+        createdAt: { [Op.gte]: startDate }
+      },
+      group: [sequelize.fn('DATE', sequelize.col('created_at'))],
+      order: [[sequelize.fn('DATE', sequelize.col('created_at')), 'ASC']],
+      raw: true
     });
-    
-    const recentOrders = await Order.findAll({ 
-      limit: 5, 
-      order: [['createdAt', 'DESC']] 
+
+    // ── Top produits vendus ─────────────────────────────────────────
+    // On agrège depuis le JSONB items des commandes complétées
+    const completedOrders = await Order.findAll({
+      attributes: ['items'],
+      where: {
+        paymentStatus: 'completed',
+        createdAt: { [Op.gte]: startDate }
+      },
+      raw: true
     });
-    
+
+    const productSales = {};
+    completedOrders.forEach(order => {
+      (order.items || []).forEach(item => {
+        const key = item.productId || item.name;
+        if (!productSales[key]) {
+          productSales[key] = {
+            productId: item.productId,
+            name: item.name,
+            totalQuantity: 0,
+            totalRevenue: 0
+          };
+        }
+        productSales[key].totalQuantity += item.quantity;
+        productSales[key].totalRevenue += item.pricePerUnit * item.quantity;
+      });
+    });
+
+    const topProducts = Object.values(productSales)
+      .sort((a, b) => b.totalRevenue - a.totalRevenue)
+      .slice(0, 10)
+      .map(p => ({
+        ...p,
+        totalRevenue: parseFloat(p.totalRevenue.toFixed(2))
+      }));
+
+    // ── Répartition des statuts ─────────────────────────────────────
+    const ordersByStatus = await Order.findAll({
+      attributes: [
+        'status',
+        [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+      ],
+      group: ['status'],
+      raw: true
+    });
+
+    // ── Nouveaux users par jour ─────────────────────────────────────
+    const newUsersByDay = await User.findAll({
+      attributes: [
+        [sequelize.fn('DATE', sequelize.col('created_at')), 'date'],
+        [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+      ],
+      where: { createdAt: { [Op.gte]: startDate } },
+      group: [sequelize.fn('DATE', sequelize.col('created_at'))],
+      order: [[sequelize.fn('DATE', sequelize.col('created_at')), 'ASC']],
+      raw: true
+    });
+
+    // ── Panier moyen ────────────────────────────────────────────────
+    const avgOrder = totalRevenue && totalOrders
+      ? (totalRevenue / totalOrders).toFixed(2)
+      : '0.00';
+
+    // ── Variation période vs période précédente ─────────────────────
+    const revenueGrowth = prevPeriodRevenue
+      ? (((periodRevenue - prevPeriodRevenue) / prevPeriodRevenue) * 100).toFixed(1)
+      : null;
+    const ordersGrowth = prevPeriodOrders
+      ? (((periodOrders - prevPeriodOrders) / prevPeriodOrders) * 100).toFixed(1)
+      : null;
+
+    // ── Commandes récentes ──────────────────────────────────────────
+    const recentOrders = await Order.findAll({
+      limit: 10,
+      order: [['createdAt', 'DESC']]
+    });
+
     res.json({
-      stats: { 
-        totalOrders, 
-        totalRevenue: parseFloat(totalRevenue).toFixed(2) || '0.00', 
+      period,
+      stats: {
+        totalOrders,
+        totalRevenue:   parseFloat(totalRevenue || 0).toFixed(2),
         totalUsers,
-        todayOrders
+        todayOrders,
+        pendingOrders,
+        avgOrderValue:  avgOrder,
+        periodOrders,
+        periodRevenue:  parseFloat(periodRevenue || 0).toFixed(2),
+        revenueGrowth:  revenueGrowth ? `${revenueGrowth}%` : 'N/A',
+        ordersGrowth:   ordersGrowth  ? `${ordersGrowth}%`  : 'N/A'
+      },
+      charts: {
+        revenueByDay,
+        newUsersByDay,
+        ordersByStatus,
+        topProducts
       },
       recentOrders
     });
+
   } catch (err) {
-    logger.error('Dashboard error', { error: err.message, stack: err.stack });
+    logger.error('Dashboard error', { error: err.message });
     res.status(500).json({ error: 'Dashboard error' });
   }
 });
@@ -111,7 +264,7 @@ router.get('/orders/:id', verifyAdmin, async (req, res) => {
 });
 
 // PUT /api/admin/orders/:id - Update order status/payment
-router.put('/orders/:id', verifyAdmin, async (req, res) => {
+router.put('/orders/:id', verifyAdmin, logAdminAction('UPDATE_ORDER', 'Order'), async (req, res) => {
   try {
     const { status, paymentStatus } = req.body;
     const updateData = {};
@@ -129,6 +282,20 @@ router.put('/orders/:id', verifyAdmin, async (req, res) => {
     }
     
     await Order.update(updateData, { where: { id: req.params.id } });
+
+    // Récupérer la commande mise à jour pour les notifications
+    const updatedOrder = await Order.findByPk(req.params.id);
+
+    // Notifier le client si son statut a changé et qu'il est lié Telegram
+    if (updatedOrder?.userId) {
+      notifyClient(updatedOrder.userId, msgStatutClient(updatedOrder)).catch(() => {});
+    }
+
+    // Notifier l'admin si annulation
+    if (updateData.status === 'cancelled') {
+      notifyAdmin(msgAnnulationAdmin(updatedOrder)).catch(() => {});
+    }
+
     res.json({ message: 'Order updated', data: updateData });
   } catch (err) {
     logger.error('Order update error', { error: err.message, stack: err.stack });
@@ -172,7 +339,7 @@ router.get('/products', verifyAdmin, async (req, res) => {
 });
 
 // POST /api/admin/products - Create product with validation
-router.post('/products', verifyAdmin, async (req, res) => {
+router.post('/products', verifyAdmin, logAdminAction('CREATE_PRODUCT', 'Product'), async (req, res) => {
   try {
     const errors = validateProduct(req.body);
     if (errors.length) return res.status(400).json({ errors });
@@ -189,7 +356,7 @@ router.post('/products', verifyAdmin, async (req, res) => {
 });
 
 // PUT /api/admin/products/:id - Update product with validation
-router.put('/products/:id', verifyAdmin, async (req, res) => {
+router.put('/products/:id', verifyAdmin, logAdminAction('UPDATE_PRODUCT', 'Product'), async (req, res) => {
   try {
     const errors = validateProduct({ name: req.body.name || 'temp', slug: req.body.slug || 'temp', ...req.body });
     if (errors.length) {
@@ -217,7 +384,7 @@ router.put('/products/:id', verifyAdmin, async (req, res) => {
 });
 
 // DELETE /api/admin/products/:id
-router.delete('/products/:id', verifyAdmin, async (req, res) => {
+router.delete('/products/:id', verifyAdmin, logAdminAction('DELETE_PRODUCT', 'Product'), async (req, res) => {
   try {
     const result = await Product.destroy({ where: { id: req.params.id } });
     if (result === 0) return res.status(404).json({ error: 'Product not found' });
@@ -286,7 +453,7 @@ router.get('/users/:id', verifyAdmin, async (req, res) => {
 });
 
 // PUT /api/admin/users/:id - Update user (promote to admin, etc)
-router.put('/users/:id', verifyAdmin, async (req, res) => {
+router.put('/users/:id', verifyAdmin, logAdminAction('UPDATE_USER', 'User'), async (req, res) => {
   try {
     const { role, verified } = req.body;
     const updateData = {};
@@ -399,6 +566,214 @@ router.put('/products/:id/images/reorder', verifyAdmin, async (req, res) => {
     res.json({ message: 'Ordre mis à jour', images });
   } catch (err) {
     logger.error('Erreur réordonnancement images', { error: err.message });
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// EXPORTS & ANALYTICS
+// ────────────────────────────────────────────────────────────────────────────
+
+// GET /api/admin/export/orders — Export CSV commandes
+router.get('/export/orders', verifyAdmin, async (req, res) => {
+  try {
+    const { startDate, endDate, status, paymentStatus } = req.query;
+    const where = {};
+
+    if (status) where.status = status;
+    if (paymentStatus) where.paymentStatus = paymentStatus;
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) where.createdAt[Op.gte] = new Date(startDate);
+      if (endDate)   where.createdAt[Op.lte] = new Date(endDate);
+    }
+
+    const orders = await Order.findAll({
+      where,
+      order: [['createdAt', 'DESC']],
+      raw: true
+    });
+
+    // Aplatir les données pour le CSV
+    const rows = orders.map(o => ({
+      orderNumber:    o.orderNumber,
+      date:           new Date(o.createdAt).toLocaleDateString('fr-FR'),
+      status:         o.status,
+      paymentStatus:  o.paymentStatus,
+      paymentMethod:  o.paymentMethod || '',
+      total:          parseFloat(o.total).toFixed(2),
+      tax:            parseFloat(o.tax || 0).toFixed(2),
+      shippingCost:   parseFloat(o.shippingCost || 0).toFixed(2),
+      itemsCount:     (o.items || []).length,
+      customerName:   o.shippingAddress?.name || '',
+      customerEmail:  o.shippingAddress?.email || '',
+      city:           o.shippingAddress?.city || '',
+      zipcode:        o.shippingAddress?.zipcode || '',
+      notes:          o.notes || ''
+    }));
+
+    const fields = [
+      'orderNumber', 'date', 'status', 'paymentStatus', 'paymentMethod',
+      'total', 'tax', 'shippingCost', 'itemsCount',
+      'customerName', 'customerEmail', 'city', 'zipcode', 'notes'
+    ];
+
+    const parser = new Parser({ fields, delimiter: ';' });
+    const csv = parser.parse(rows);
+
+    const filename = `orders_${new Date().toISOString().split('T')[0]}.csv`;
+    res.header('Content-Type', 'text/csv; charset=utf-8');
+    res.header('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send('\uFEFF' + csv); // BOM UTF-8 pour Excel
+
+  } catch (err) {
+    logger.error('Export orders CSV error', { error: err.message });
+    res.status(500).json({ error: 'Erreur export' });
+  }
+});
+
+// GET /api/admin/export/products — Export CSV produits + stock
+router.get('/export/products', verifyAdmin, async (req, res) => {
+  try {
+    const products = await Product.findAll({ raw: true });
+
+    const rows = products.flatMap(p => {
+      const stock   = p.stock   || {};
+      const pricing = p.pricing || {};
+      const formats = Object.keys(pricing);
+
+      if (formats.length === 0) {
+        return [{
+          name: p.name, slug: p.slug, grade: p.grade,
+          tier: p.tier, type: p.type, thc: p.thc, cbd: p.cbd,
+          active: p.active, format: '', price: '', stock: ''
+        }];
+      }
+
+      return formats.map(fmt => ({
+        name:   p.name,
+        slug:   p.slug,
+        grade:  p.grade,
+        tier:   p.tier,
+        type:   p.type,
+        thc:    p.thc,
+        cbd:    p.cbd,
+        active: p.active,
+        format: fmt,
+        price:  pricing[fmt] ?? '',
+        stock:  stock[fmt]   ?? 0
+      }));
+    });
+
+    const fields = [
+      'name', 'slug', 'grade', 'tier', 'type',
+      'thc', 'cbd', 'active', 'format', 'price', 'stock'
+    ];
+
+    const parser  = new Parser({ fields, delimiter: ';' });
+    const csv     = parser.parse(rows);
+    const filename = `products_${new Date().toISOString().split('T')[0]}.csv`;
+
+    res.header('Content-Type', 'text/csv; charset=utf-8');
+    res.header('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send('\uFEFF' + csv);
+
+  } catch (err) {
+    logger.error('Export products CSV error', { error: err.message });
+    res.status(500).json({ error: 'Erreur export' });
+  }
+});
+
+// GET /api/admin/logs — Historique activité admin
+router.get('/logs', verifyAdmin, async (req, res) => {
+  try {
+    const { page = 0, limit = 50, adminId, action, entity } = req.query;
+    const where = {};
+
+    if (adminId) where.adminId = adminId;
+    if (action)  where.action  = action;
+    if (entity)  where.entity  = entity;
+
+    const logs = await AdminLog.findAll({
+      where,
+      limit: Math.min(parseInt(limit), 200),
+      offset: parseInt(page) * parseInt(limit),
+      order: [['createdAt', 'DESC']]
+    });
+
+    const count = await AdminLog.count({ where });
+
+    res.json({ logs, count, page: parseInt(page), limit: parseInt(limit) });
+  } catch (err) {
+    logger.error('Logs fetch error', { error: err.message });
+    res.status(500).json({ error: 'Erreur récupération logs' });
+  }
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// TAGS MANAGEMENT
+// ────────────────────────────────────────────────────────────────────────────
+
+// POST /api/admin/products/:id/tags — Ajouter un tag
+router.post('/products/:id/tags', verifyAdmin, async (req, res) => {
+  try {
+    const { tag } = req.body;
+    if (!tag || typeof tag !== 'string') {
+      return res.status(400).json({ error: 'Tag requis (string)' });
+    }
+
+    const product = await Product.findByPk(req.params.id);
+    if (!product) return res.status(404).json({ error: 'Produit introuvable' });
+
+    const tags = product.tags || [];
+    if (tags.includes(tag.toLowerCase())) {
+      return res.status(400).json({ error: 'Tag déjà présent' });
+    }
+
+    const newTags = [...tags, tag.toLowerCase().trim()];
+    await product.update({ tags: newTags });
+
+    res.json({ message: 'Tag ajouté', tags: newTags });
+  } catch (err) {
+    logger.error('Erreur ajout tag', { error: err.message });
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// DELETE /api/admin/products/:id/tags — Supprimer un tag
+router.delete('/products/:id/tags', verifyAdmin, async (req, res) => {
+  try {
+    const { tag } = req.body;
+    if (!tag) return res.status(400).json({ error: 'Tag requis' });
+
+    const product = await Product.findByPk(req.params.id);
+    if (!product) return res.status(404).json({ error: 'Produit introuvable' });
+
+    const newTags = (product.tags || []).filter(t => t !== tag.toLowerCase());
+    await product.update({ tags: newTags });
+
+    res.json({ message: 'Tag supprimé', tags: newTags });
+  } catch (err) {
+    logger.error('Erreur suppression tag', { error: err.message });
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// GET /api/admin/tags — Liste tous les tags utilisés
+router.get('/tags', verifyAdmin, async (req, res) => {
+  try {
+    const products = await Product.findAll({
+      attributes: ['tags'],
+      raw: true
+    });
+
+    const allTags = [...new Set(
+      products.flatMap(p => p.tags || [])
+    )].sort();
+
+    res.json({ tags: allTags, count: allTags.length });
+  } catch (err) {
+    logger.error('Erreur fetch tags', { error: err.message });
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });

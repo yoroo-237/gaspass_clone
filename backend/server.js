@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import sequelize from './config/db.js';
 import logger from './utils/logger.js';
 
-import { limiter, strictLimiter } from './middleware/rateLimit.js';
+import { limiter, strictLimiter, userLimiter, orderLimiter } from './middleware/rateLimit.js';
 import errorHandler from './middleware/errorHandler.js';
 
 import productsRouter from './routes/products.js';
@@ -16,6 +16,9 @@ import telegramRouter from './routes/telegram.js';
 import adminRouter from './routes/admin.js';
 import usersRouter from './routes/users.js';
 import uploadRouter from './routes/upload.js';
+import categoriesRouter from './routes/categories.js';
+import reviewsRouter from './routes/reviews.js';
+import cartRouter from './routes/cart.js';
 
 dotenv.config();
 
@@ -70,18 +73,24 @@ app.use((req, res, next) => {
 });
 
 // Rate limiting
-app.use('/api/auth', strictLimiter);
-app.use('/api/', limiter);
+app.use('/api/auth',    strictLimiter);
+app.use('/api/orders',  orderLimiter);   // limite les créations de commande
+app.use('/api/cart',    userLimiter);    // limite par user sur le panier
+app.use('/api/reviews', userLimiter);    // limite par user sur les reviews
+app.use('/api/',        limiter);        // fallback global IP
 
 // Routes API
-app.use('/api/products', productsRouter);
-app.use('/api/auth', authRouter);
-app.use('/api/users', usersRouter);
-app.use('/api/payment', paymentRouter);
-app.use('/api/orders', ordersRouter);
-app.use('/api/telegram', telegramRouter);
-app.use('/api/admin', adminRouter);
-app.use('/api/upload', uploadRouter);
+app.use('/api/products',    productsRouter);
+app.use('/api/auth',        authRouter);
+app.use('/api/users',       usersRouter);
+app.use('/api/payment',     paymentRouter);
+app.use('/api/orders',      ordersRouter);
+app.use('/api/telegram',    telegramRouter);
+app.use('/api/admin',       adminRouter);
+app.use('/api/upload',      uploadRouter);
+app.use('/api/categories',  categoriesRouter);
+app.use('/api/reviews',     reviewsRouter);
+app.use('/api/cart',        cartRouter);
 
 // Serve uploaded files
 app.use('/uploads', express.static('uploads'));

@@ -7,7 +7,7 @@ const router = express.Router();
 // GET /api/products - Avec filtres optionnels
 router.get('/', async (req, res) => {
   try {
-    const { category, grade, search, page = 0, limit = 20 } = req.query;
+    const { category, grade, tag, search, page = 0, limit = 20 } = req.query;
     
     const where = { active: true };
     
@@ -22,6 +22,11 @@ router.get('/', async (req, res) => {
     // Filtrer par grade
     if (grade) {
       where.grade = grade;
+    }
+
+    // Filtrer par tag
+    if (tag) {
+      where.tags = { [Op.contains]: [tag] };
     }
     
     // Recherche par nom ou description
