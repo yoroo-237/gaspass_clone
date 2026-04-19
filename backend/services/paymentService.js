@@ -19,12 +19,25 @@ export const verifyWebhook = (req) => {
   const sig = req.headers['stripe-signature'];
   try {
     return stripe.webhooks.constructEvent(
-      req.rawBody,
+      req.body,  // ← maintenant c'est le raw buffer grâce au middleware
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
     throw new Error('Webhook signature invalide');
+  }
+};
+
+export const createRefund = async (paymentIntentId, amount = null) => {
+  try {
+    const refundData = { payment_intent: paymentIntentId };
+    // Si amount fourni → remboursement partiel, sinon remboursement total
+    if (amount) refundData.amount = Math.round(amount * 100);
+
+    const refund = await stripe.refunds.create(refundData);
+    return refund;
+  } catch (err) {
+    throw new Error(`Erreur remboursement Stripe: ${err.message}`);
   }
 };
 

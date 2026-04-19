@@ -1,6 +1,8 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { blacklistToken } from '../utils/tokenBlacklist.js';
+import logger from '../utils/logger.js';
 
 const validateEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -44,7 +46,7 @@ export const register = async (req, res) => {
       user: { id: user.id, email: user.email, role: user.role, phone: user.phone } 
     });
   } catch (err) {
-    console.error('Registration error:', err);
+    logger.error('Registration error', { error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Erreur enregistrement' });
   }
 };
@@ -69,11 +71,15 @@ export const login = async (req, res) => {
       user: { id: user.id, email: user.email, role: user.role, phone: user.phone } 
     });
   } catch (err) {
-    console.error('Login error:', err);
+    logger.error('Login error', { error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Erreur connexion' });
   }
 };
 
 export const logout = (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (token) {
+    blacklistToken(token);
+  }
   res.json({ message: 'Logged out' });
 };

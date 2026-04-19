@@ -14,8 +14,13 @@ const createDefaultAdmin = async () => {
     // Créer les tables si elles n'existent pas
     await sequelize.sync({ alter: true });
 
-    const email = 'dr-mko@gaspass.com';
-    const password = 'Azert12345';
+    const email = process.env.ADMIN_EMAIL;
+    const password = process.env.ADMIN_PASSWORD;
+
+    if (!email || !password) {
+      console.error('❌ ADMIN_EMAIL et ADMIN_PASSWORD requis dans .env');
+      process.exit(1);
+    }
 
     // Vérifier si l'utilisateur existe déjà
     let user = await User.findOne({ where: { email } });

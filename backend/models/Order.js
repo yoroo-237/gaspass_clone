@@ -9,8 +9,9 @@ const Order = sequelize.define('Order', {
   tax: { type: DataTypes.FLOAT },
   shippingCost: { type: DataTypes.FLOAT },
   status: { type: DataTypes.STRING, defaultValue: 'pending' },
-  paymentStatus: { type: DataTypes.STRING, defaultValue: 'pending' },
+  paymentStatus: { type: DataTypes.STRING, defaultValue: 'pending' }, // pending, processing, completed, failed, refunded, partially_refunded
   paymentMethod: { type: DataTypes.STRING },
+  paymentIntentId: { type: DataTypes.STRING }, // Stripe PaymentIntent ID
   shippingAddress: { type: DataTypes.JSONB },
   telegramUserId: { type: DataTypes.BIGINT },
   telegramChatId: { type: DataTypes.BIGINT },

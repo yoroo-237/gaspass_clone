@@ -1,6 +1,8 @@
 import TelegramBot from 'node-telegram-bot-api';
 import User from '../models/User.js';
 import Order from '../models/Order.js';
+import TelegramLinkCode from '../models/TelegramLinkCode.js';
+import logger from '../utils/logger.js';
 
 let bot = null;
 
@@ -8,7 +10,7 @@ const initializeBot = () => {
   if (bot) return bot;
   
   if (!process.env.TELEGRAM_BOT_TOKEN) {
-    console.warn('⚠️ TELEGRAM_BOT_TOKEN not configured - Telegram features disabled');
+    logger.warn('TELEGRAM_BOT_TOKEN not configured — Telegram features disabled');
     return null;
   }
 
@@ -17,8 +19,8 @@ const initializeBot = () => {
 
     if (process.env.SERVER_URL) {
       bot.setWebHook(`${process.env.SERVER_URL}/api/telegram/webhook`)
-        .then(() => console.log('✅ Telegram WebHook set'))
-        .catch(err => console.warn('⚠️ Telegram WebHook error:', err.message));
+        .then(() => logger.info('Telegram WebHook set'))
+        .catch(err => logger.warn('Telegram WebHook error', { error: err.message }));
     }
 
     bot.onText(/\/start/, async (msg) => {
@@ -41,11 +43,15 @@ const initializeBot = () => {
     bot.onText(/\/link|🔗 Lier compte/, async (msg) => {
       const chatId = msg.chat.id;
       const userId = msg.from.id;
-      const code = Math.random().toString(36).substring(7);
+      const code = Math.random().toString(36).substring(7).toUpperCase();
       
-      // Store code in cache (ideally use Redis)
-      if (!global.telegramLinkCodes) global.telegramLinkCodes = {};
-      global.telegramLinkCodes[code] = { telegramId: userId, chatId, expiresAt: Date.now() + 15 * 60 * 1000 };
+      try {
+        await TelegramLinkCode.create({
+          code,
+          telegramId: userId,
+          chatId,
+          expiresAt: new Date(Date.now() + 15 * 60 * 1000)
+        });
       
       bot.sendMessage(chatId, 
         `📱 Code de linking: \`${code}\`\n\n` +

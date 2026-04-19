@@ -1,8 +1,9 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import dotenv from 'dotenv';
-import fileUpload from 'express-fileupload';
 import sequelize from './config/db.js';
+import logger from './utils/logger.js';
 
 import { limiter, strictLimiter } from './middleware/rateLimit.js';
 import errorHandler from './middleware/errorHandler.js';
@@ -20,10 +21,53 @@ dotenv.config();
 
 const app = express();
 
-// Middlewares
-app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
-app.use(express.json());
-app.use(fileUpload());
+// Security headers
+app.use(helmet());
+app.use(helmet.hsts({ maxAge: 31536000, includeSubDomains: true }));
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'"],
+    styleSrc: ["'self'", "'unsafe-inline'"],
+    imgSrc: ["'self'", "data:", "blob:"],
+    connectSrc: ["'self'"],
+    fontSrc: ["'self'"],
+    objectSrc: ["'none'"],
+    upgradeInsecureRequests: []
+  }
+}));
+
+// CORS dynamique
+const allowedOrigins = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(',').map(o => o.trim())
+  : [];
+
+if (allowedOrigins.length === 0) {
+  logger.warn('FRONTEND_URL non défini — CORS bloqué pour toutes les origines');
+}
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Autoriser les requêtes sans origin (Postman, mobile, curl) en dev uniquement
+    if (!origin && process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(new Error(`CORS: origine non autorisée — ${origin}`));
+  },
+  credentials: true
+}));
+
+// Custom middleware to handle raw body for Stripe webhook
+app.use((req, res, next) => {
+  if (req.originalUrl === '/api/payment/webhook') {
+    express.raw({ type: 'application/json' })(req, res, next);
+  } else {
+    express.json()(req, res, next);
+  }
+});
 
 // Rate limiting
 app.use('/api/auth', strictLimiter);
@@ -54,14 +98,14 @@ app.use(errorHandler);
 (async () => {
   try {
     await sequelize.authenticate();
-    console.log('✅ Connexion PostgreSQL OK');
+    logger.info('Connexion PostgreSQL OK');
     // await sequelize.sync({ alter: true }); // décommenter pour sync auto
   } catch (error) {
-    console.error('❌ Erreur connexion PostgreSQL:', error);
+    logger.error('Erreur connexion PostgreSQL', { error: error.message, stack: error.stack });
   }
 })();
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  logger.info(`Server running on port ${PORT}`);
 });

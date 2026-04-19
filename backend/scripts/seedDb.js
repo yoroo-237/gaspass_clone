@@ -1,14 +1,23 @@
 import sequelize from '../config/db.js';
 import Product from '../models/Product.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const seedDb = async () => {
   try {
+    // Vérification de sécurité — jamais en prod
+    if (process.env.NODE_ENV === 'production') {
+      console.error('❌ seedDb ne peut pas tourner en production (force: true)');
+      process.exit(1);
+    }
+
     await sequelize.authenticate();
     console.log('✅ Connexion DB OK');
 
     // Sync tables
     await sequelize.sync({ force: true });
-    console.log('✅ Tables créées');
+    console.log('✅ Tables créés (environnement de développement)');
 
     // Seed products
     const products = [
@@ -117,8 +126,14 @@ const seedDb = async () => {
     // Seed super admin
     const User = (await import('../models/User.js')).default;
     const bcrypt = (await import('bcryptjs')).default;
-    const superAdminEmail = 'dr.mko@gmail.com';
-    const superAdminPassword = 'mko@123!';
+    const superAdminEmail = process.env.SEED_ADMIN_EMAIL;
+    const superAdminPassword = process.env.SEED_ADMIN_PASSWORD;
+
+    if (!superAdminEmail || !superAdminPassword) {
+      console.error('❌ SEED_ADMIN_EMAIL et SEED_ADMIN_PASSWORD requis dans .env');
+      process.exit(1);
+    }
+
     const hash = await bcrypt.hash(superAdminPassword, 10);
     await User.create({
       email: superAdminEmail,

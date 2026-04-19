@@ -2,6 +2,7 @@ import express from 'express';
 import User from '../models/User.js';
 import Order from '../models/Order.js';
 import { verifyToken } from '../middleware/auth.js';
+import logger from '../utils/logger.js';
 
 const router = express.Router();
 
@@ -15,7 +16,7 @@ router.get('/me', verifyToken, async (req, res) => {
     if (!user) return res.status(404).json({ error: 'Utilisateur non trouvé' });
     res.json(user);
   } catch (err) {
-    console.error('Erreur fetch profil:', err);
+    logger.error('Erreur fetch profil', { error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
@@ -41,7 +42,7 @@ router.get('/me/orders', verifyToken, async (req, res) => {
       limit: parseInt(limit)
     });
   } catch (err) {
-    console.error('Erreur fetch commandes utilisateur:', err);
+    logger.error('Erreur fetch commandes utilisateur', { error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
@@ -65,21 +66,23 @@ router.put('/me', verifyToken, async (req, res) => {
     
     res.json({ message: 'Profil mis à jour', user });
   } catch (err) {
-    console.error('Erreur mise à jour profil:', err);
+    logger.error('Erreur mise à jour profil', { error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 
-// GET /api/users/:id - Voir profil autre utilisateur (public)
+// GET /api/users/:id - Voir profil autre utilisateur (public minimal uniquement)
 router.get('/:id', async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id, {
-      attributes: { exclude: ['passwordHash', 'telegramId', 'telegramChatId', 'telegramUsername'] }
+      attributes: ['id', 'firstName', 'lastName', 'createdAt']
+      // Rien d'autre — email, phone, role, address, telegramConnected sont privés
     });
     
     if (!user) return res.status(404).json({ error: 'Utilisateur non trouvé' });
     res.json(user);
   } catch (err) {
+    logger.error('Erreur fetch user public', { error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });

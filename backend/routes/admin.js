@@ -1,10 +1,12 @@
 import express from 'express';
+import jwt from 'jsonwebtoken';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import User from '../models/User.js';
 import { verifyAdmin } from '../middleware/auth.js';
 import sequelize from '../config/db.js';
 import { Op } from 'sequelize';
+import logger from '../utils/logger.js';
 
 const router = express.Router();
 
@@ -52,7 +54,7 @@ router.get('/dashboard', verifyAdmin, async (req, res) => {
       recentOrders
     });
   } catch (err) {
-    console.error('Dashboard error:', err);
+    logger.error('Dashboard error', { error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Dashboard error' });
   }
 });
@@ -68,7 +70,11 @@ router.get('/orders', verifyAdmin, async (req, res) => {
     if (search) {
       where[Op.or] = [
         { orderNumber: { [Op.iLike]: `%${search}%` } },
-        sequelize.where(sequelize.col('Order.shippingAddress'), Op.like, `%${search}%`)
+        // Recherche dans le JSONB via cast PostgreSQL
+        sequelize.where(
+          sequelize.cast(sequelize.col('shipping_address'), 'text'),
+          { [Op.iLike]: `%${search}%` }
+        )
       ];
     }
     
@@ -88,7 +94,7 @@ router.get('/orders', verifyAdmin, async (req, res) => {
       limit: parseInt(limit)
     });
   } catch (err) {
-    console.error('Orders error:', err);
+    logger.error('Orders error', { error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Erreur récupération commandes' });
   }
 });
@@ -125,7 +131,7 @@ router.put('/orders/:id', verifyAdmin, async (req, res) => {
     await Order.update(updateData, { where: { id: req.params.id } });
     res.json({ message: 'Order updated', data: updateData });
   } catch (err) {
-    console.error('Order update error:', err);
+    logger.error('Order update error', { error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Update error' });
   }
 });
@@ -160,7 +166,7 @@ router.get('/products', verifyAdmin, async (req, res) => {
       limit: parseInt(limit)
     });
   } catch (err) {
-    console.error('Products error:', err);
+    logger.error('Products error', { error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Error fetching products' });
   }
 });
@@ -174,7 +180,7 @@ router.post('/products', verifyAdmin, async (req, res) => {
     const product = await Product.create(req.body);
     res.status(201).json(product);
   } catch (err) {
-    console.error('Product creation error:', err);
+    logger.error('Product creation error', { error: err.message, stack: err.stack });
     if (err.name === 'SequelizeUniqueConstraintError') {
       return res.status(400).json({ error: 'Slug must be unique' });
     }
@@ -202,7 +208,7 @@ router.put('/products/:id', verifyAdmin, async (req, res) => {
     await Product.update(req.body, { where: { id: req.params.id } });
     res.json({ message: 'Product updated' });
   } catch (err) {
-    console.error('Product update error:', err);
+    logger.error('Product update error', { error: err.message, stack: err.stack });
     if (err.name === 'SequelizeUniqueConstraintError') {
       return res.status(400).json({ error: 'Slug must be unique' });
     }
@@ -217,7 +223,7 @@ router.delete('/products/:id', verifyAdmin, async (req, res) => {
     if (result === 0) return res.status(404).json({ error: 'Product not found' });
     res.json({ message: 'Product deleted' });
   } catch (err) {
-    console.error('Product delete error:', err);
+    logger.error('Product delete error', { error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Delete error' });
   }
 });
@@ -254,7 +260,7 @@ router.get('/users', verifyAdmin, async (req, res) => {
       limit: parseInt(limit)
     });
   } catch (err) {
-    console.error('Users error:', err);
+    logger.error('Users error', { error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Error fetching users' });
   }
 });
@@ -284,8 +290,23 @@ router.put('/users/:id', verifyAdmin, async (req, res) => {
   try {
     const { role, verified } = req.body;
     const updateData = {};
-    
-    if (role && ['user', 'admin'].includes(role)) updateData.role = role;
+
+    // Récupérer le rôle de l'admin qui fait la requête
+    const token = req.headers.authorization?.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const requesterRole = decoded.role;
+
+    if (role) {
+      const allowedRoles = ['customer', 'admin'];
+      // Seul un superadmin peut promouvoir en superadmin
+      if (requesterRole === 'superadmin') allowedRoles.push('superadmin');
+
+      if (!allowedRoles.includes(role)) {
+        return res.status(403).json({ error: `Vous ne pouvez pas attribuer le rôle "${role}"` });
+      }
+      updateData.role = role;
+    }
+
     if (verified !== undefined) updateData.verified = verified;
     
     if (Object.keys(updateData).length === 0) {
@@ -295,8 +316,90 @@ router.put('/users/:id', verifyAdmin, async (req, res) => {
     await User.update(updateData, { where: { id: req.params.id } });
     res.json({ message: 'User updated', data: updateData });
   } catch (err) {
-    console.error('User update error:', err);
+    logger.error('User update error', { error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Update error' });
+  }
+});
+
+// POST /api/admin/products/:id/images — Ajouter une image
+router.post('/products/:id/images', verifyAdmin, async (req, res) => {
+  try {
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ error: 'URL image requise' });
+
+    const product = await Product.findByPk(req.params.id);
+    if (!product) return res.status(404).json({ error: 'Produit introuvable' });
+
+    const images = product.images || [];
+
+    if (images.includes(url)) {
+      return res.status(400).json({ error: 'Image déjà présente' });
+    }
+    if (images.length >= 10) {
+      return res.status(400).json({ error: 'Maximum 10 images par produit' });
+    }
+
+    const newImages = [...images, url];
+    await product.update({ images: newImages });
+
+    res.json({ message: 'Image ajoutée', images: newImages });
+  } catch (err) {
+    logger.error('Erreur ajout image', { error: err.message });
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// DELETE /api/admin/products/:id/images — Supprimer une image
+router.delete('/products/:id/images', verifyAdmin, async (req, res) => {
+  try {
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ error: 'URL image requise' });
+
+    const product = await Product.findByPk(req.params.id);
+    if (!product) return res.status(404).json({ error: 'Produit introuvable' });
+
+    const images = product.images || [];
+    if (!images.includes(url)) {
+      return res.status(404).json({ error: 'Image introuvable sur ce produit' });
+    }
+
+    const newImages = images.filter(img => img !== url);
+    await product.update({ images: newImages });
+
+    res.json({ message: 'Image supprimée', images: newImages });
+  } catch (err) {
+    logger.error('Erreur suppression image', { error: err.message });
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// PUT /api/admin/products/:id/images/reorder — Réordonner les images
+router.put('/products/:id/images/reorder', verifyAdmin, async (req, res) => {
+  try {
+    const { images } = req.body;
+
+    if (!Array.isArray(images)) {
+      return res.status(400).json({ error: 'images doit être un tableau' });
+    }
+
+    const product = await Product.findByPk(req.params.id);
+    if (!product) return res.status(404).json({ error: 'Produit introuvable' });
+
+    const currentImages = product.images || [];
+
+    // Vérifier que le tableau contient exactement les mêmes URLs
+    const same = images.length === currentImages.length &&
+      images.every(url => currentImages.includes(url));
+
+    if (!same) {
+      return res.status(400).json({ error: 'Les URLs ne correspondent pas aux images existantes' });
+    }
+
+    await product.update({ images });
+    res.json({ message: 'Ordre mis à jour', images });
+  } catch (err) {
+    logger.error('Erreur réordonnancement images', { error: err.message });
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 

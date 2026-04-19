@@ -48,7 +48,7 @@ router.get('/', async (req, res) => {
       products
     });
   } catch (err) {
-    console.error('Erreur fetch produits:', err);
+    logger.error('Erreur fetch produits', { error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
@@ -69,7 +69,7 @@ router.get('/:id', async (req, res) => {
     if (!product) return res.status(404).json({ error: 'Produit non trouvé' });
     res.json(product);
   } catch (err) {
-    console.error('Erreur fetch produit:', err);
+    logger.error('Erreur fetch produit', { error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
