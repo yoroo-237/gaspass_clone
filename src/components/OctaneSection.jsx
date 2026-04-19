@@ -122,7 +122,7 @@ export default function OctaneSection() {
 
           {/* Shop Flower CTA */}
           <a
-            href="#shop"
+            href="/shop"
             style={{
               display: 'inline-flex',
               alignItems: 'center',

@@ -354,7 +354,7 @@ export default function OrderSection() {
         </div>
 
         {/* ── FAQ ── */}
-        <div style={{ maxWidth: 1200, margin: '0 auto', paddingBottom: 120 }}>
+        <div id="faq" style={{ maxWidth: 1200, margin: '0 auto', paddingBottom: 120 }}>
           <FAQ />
         </div>
 

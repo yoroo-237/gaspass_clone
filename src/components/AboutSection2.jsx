@@ -160,7 +160,7 @@ export default function AboutSection() {
 
               {/* CTA */}
               <div style={{ marginTop: 32 }}>
-                <a href="#shop" className="shop-btn">
+                <a href="/shop" className="shop-btn">
                   Shop Flower <span>→</span>
                 </a>
               </div>
