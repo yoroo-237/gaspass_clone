@@ -1,497 +1,217 @@
-# 📋 Configuration Complète — GasPass Project
+# � Configuration & Déploiement — GasPass
 
-## ✅ Statut: Groupe 1, 2, 3 appliqués
+## 🔐 Variables d'Environnement
 
----
-
-## 📦 Dépendances Installées
-
-### Installation effectuée:
-```bash
-npm install helmet winston multer
-npm uninstall express-fileupload
-```
-
-### Versions attendues:
-- **helmet** ^7.0.0 — Headers de sécurité
-- **winston** ^3.11.0 — Logging structuré
-- **multer** ^1.4.5 — Upload fichiers
-
----
-
-## 🗂️ Fichiers Créés
-
-### Nouveaux fichiers backend:
-
-```
-backend/
-├── utils/
-│   └── tokenBlacklist.js          ✅ Blacklist tokens (révocation)
-│   └── logger.js                  ✅ Logger Winston structuré
-│
-├── models/
-│   └── TelegramLinkCode.js        ✅ Table DB pour codes Telegram
-│
-├── logs/                          ✅ Dossier (créé automatiquement)
-│   ├── error.log
-│   ├── combined.log
-│   └── .gitkeep
-```
-
----
-
-## 🔐 Variables d'Environnement (.env)
-
-### Configuration de développement (LOCAL):
+### Backend `.env` — Local Development
 
 ```env
-# ======================================
-# CONFIGURATION LOCALE (DÉVELOPPEMENT)
-# NE PAS COMMITER - Ignorer par .gitignore
-# ======================================
-
-# Database (LOCAL)
+# Database
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=gaspass_db
 DB_USER=miguel
 DB_PASSWORD=Mkomegmbdysdia4
 
-# Server (LOCAL DEVELOPMENT)
+# Server
 PORT=5000
 NODE_ENV=development
 SERVER_URL=http://localhost:5000
 FRONTEND_URL=http://localhost:5173
 
-# JWT (Générer: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
-JWT_SECRET=your_super_secret_jwt_key_change_in_production
+# JWT
+JWT_SECRET=your_dev_secret_key_change_me
 JWT_EXPIRE=15m
-REFRESH_TOKEN_SECRET=your_refresh_token_secret
+REFRESH_TOKEN_SECRET=your_dev_refresh_secret
 REFRESH_TOKEN_EXPIRE=7d
 
-# Stripe (TEST KEYS)
-STRIPE_SECRET_KEY=sk_test_your_stripe_secret
-STRIPE_PUBLIC_KEY=pk_test_your_stripe_public
-STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+# Stripe (TEST)
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_PUBLIC_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
 
 # Telegram
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+TELEGRAM_BOT_TOKEN=8717133590:AAF34M_3TuBUiP0kjTJ1P3wFtyrrqNj5Vic
+TELEGRAM_ADMIN_ID=ton_user_id_telegram
 TELEGRAM_ADMIN_GROUP_ID=-1001234567890
 TELEGRAM_WEBHOOK_URL=http://localhost:5000/api/telegram/webhook
 
-# Admin Credentials (LOCAL)
-ADMIN_EMAIL=ton_email@domain.com
-ADMIN_PASSWORD=MotDePasseTresSecurise123!
-SEED_ADMIN_EMAIL=superadmin@domain.com
-SEED_ADMIN_PASSWORD=AutreMotDePasse456!
-
-# Email (Optional)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASSWORD=your_app_password
+# Admin
+ADMIN_EMAIL=admin@gaspass.local
+ADMIN_PASSWORD=SecurePassword123!
 ```
 
-### Configuration de production (RAILWAY/VERCEL):
+### Railway Backend — Production
 
-**À configurer directement dans les dashboards (PAS de fichier .env):**
+Définir sur le dashboard Railway:
 
 ```env
-# Database (Railway fournit)
-DB_HOST=<railway-host>
-DB_PORT=5432
-DB_NAME=gaspass_db
-DB_USER=<railway-user>
-DB_PASSWORD=<railway-password>
-
-# Server (PRODUCTION)
-PORT=5000
 NODE_ENV=production
+PORT=5000
 SERVER_URL=https://api.gaspass.store
-FRONTEND_URL=https://gaspass.store,https://www.gaspass.store
+FRONTEND_URL=https://gaspass.store
 
-# JWT (Générer une clé sécurisée)
-JWT_SECRET=<crypto.randomBytes(32).toString('hex')>
-JWT_EXPIRE=15m
-REFRESH_TOKEN_SECRET=<crypto.randomBytes(32).toString('hex')>
-REFRESH_TOKEN_EXPIRE=7d
+# Database (Railway PostgreSQL)
+# → Railway génère automatiquement DATABASE_URL
+# → Parse DATABASE_URL dans config/db.js
 
-# Stripe (LIVE KEYS)
-STRIPE_SECRET_KEY=sk_live_your_live_secret
-STRIPE_PUBLIC_KEY=pk_live_your_live_public
-STRIPE_WEBHOOK_SECRET=whsec_your_live_webhook_secret
+# Secrets (générer: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+JWT_SECRET=<32_bytes_hex_random>
+REFRESH_TOKEN_SECRET=<32_bytes_hex_random>
+
+# Stripe LIVE
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_PUBLIC_KEY=pk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
 
 # Telegram
-TELEGRAM_BOT_TOKEN=<from-botfather>
-TELEGRAM_ADMIN_GROUP_ID=-1001234567890
+TELEGRAM_BOT_TOKEN=8717133590:AAF34M_3TuBUiP0kjTJ1P3wFtyrrqNj5Vic
+TELEGRAM_ADMIN_ID=<@gaspassreal_user_id>
+TELEGRAM_ADMIN_GROUP_ID=-100<your_group_id>
 TELEGRAM_WEBHOOK_URL=https://api.gaspass.store/api/telegram/webhook
 
-# Admin Credentials (PRODUCTION)
+# Admin Production
 ADMIN_EMAIL=admin@gaspass.store
-ADMIN_PASSWORD=<very-strong-password>
-SEED_ADMIN_EMAIL=superadmin@gaspass.store
-SEED_ADMIN_PASSWORD=<very-strong-password>
+ADMIN_PASSWORD=<very_strong_password>
+```
+
+### Frontend `.env` — Local & Vercel
+
+```env
+# .env.local (local development)
+VITE_API_URL=http://localhost:5000
+
+# Vercel Environment Variables
+VITE_API_URL=https://api.gaspass.store
 ```
 
 ---
 
-## 🚀 Commandes à Exécuter
-
-### 1️⃣ Setup Initial (DEV)
+## 🚀 Commandes Local Development
 
 ```bash
-# Naviguer au backend
+# Backend
 cd backend
-
-# Installer les dépendances
 npm install
-
-# Synchroniser les tables de base de données
 node scripts/syncDb.js
-
-# Créer l'utilisateur admin
-node scripts/createAdmin.js
-```
-
-### 2️⃣ Démarrer le serveur (DEV)
-
-```bash
-# Mode développement (logs colorés)
 npm start
 
-# Alternative: avec nodemon (auto-reload)
+# Frontend (autre terminal)
+npm install
 npm run dev
-```
-
-### 3️⃣ Synchroniser la nouvelle table TelegramLinkCode
-
-```bash
-# Une seule fois après les patchs
-node scripts/syncDb.js
-```
-
-### 4️⃣ Tester les webhooks Stripe (Optionnel)
-
-```bash
-# Terminal séparé: écouter les webhooks Stripe
-stripe listen --forward-to localhost:5000/api/payment/webhook
-
-# Vous obtiendrez une clé webhook à ajouter dans .env:
-# STRIPE_WEBHOOK_SECRET=whsec_...
+# → http://localhost:5173
 ```
 
 ---
 
-## ✅ Tests & Vérifications
+## 🚀 Déploiement Railway
 
-### 1. Vérifier les headers de sécurité
+### Backend API (Node.js + PostgreSQL)
 
+**Étape 1 — Créer le projet Railway**
+1. Aller sur [railway.app](https://railway.app)
+2. `New Project` → `Deploy from GitHub`
+3. Autoriser GitHub et sélectionner le repo `gaspass-clone`
+4. Choisir branche `main`
+
+**Étape 2 — Ajouter PostgreSQL**
+1. Dans le dashboard Railway, cliquer `+ New Service`
+2. Choisir `PostgreSQL`
+3. Railway crée la base automatiquement + fournit `DATABASE_URL`
+
+**Étape 3 — Configurer les variables d'environnement**
+1. Dans le service Node.js, aller à `Variables`
+2. Ajouter toutes les variables (voir section "Railway Backend — Production" ci-dessus)
+3. ⚠️ NE PAS mettre `.env` en repo — utiliser Railway dashboard uniquement
+
+**Étape 4 — Configurer le démarrage**
+1. Railway détecte automatiquement Node.js
+2. Configure `PORT=5000` si nécessaire dans Variables
+3. Crée la commande: `npm install && npm start`
+
+**Étape 5 — Domain personnalisé**
+1. Dans Railway, aller à `Settings` → `Domain`
+2. Ajouter domaine: `api.gaspass.store`
+3. Pointer les DNS du domaine vers Railway
+
+**Étape 6 — Déploiement auto**
 ```bash
-curl -I http://localhost:5000/
-
-# Doit retourner (au minimum):
-# X-Frame-Options: DENY
-# Strict-Transport-Security: max-age=31536000
-# Content-Security-Policy: default-src 'self'
+git push origin main
+# Railway détecte le push et déploie automatiquement
 ```
 
-### 2. Tester le logout (révocation token)
+✅ Backend prêt à `https://api.gaspass.store`
 
-```bash
-# 1. Obtenir un token (login)
-RESULT=$(curl -X POST http://localhost:5000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"password123"}')
-TOKEN=$(echo $RESULT | jq -r '.token')
+---
 
-# 2. Logout (revoque le token)
-curl -X POST http://localhost:5000/api/auth/logout \
-  -H "Authorization: Bearer $TOKEN"
+### Frontend (Vite + React sur Vercel)
 
-# 3. Réutiliser le token → doit retourner 401
-curl -X GET http://localhost:5000/api/users/me \
-  -H "Authorization: Bearer $TOKEN"
-# ❌ Erreur attendue: "Token révoqué"
+**Étape 1 — Déployer sur Vercel**
+1. Aller sur [vercel.com](https://vercel.com)
+2. `Import Project` → sélectionner repo GitHub `gaspass-clone`
+3. Choisir branche `main`
+
+**Étape 2 — Configurer le build**
+1. Framework: `Vite`
+2. Root directory: `.` (racine du projet)
+3. Build command: `npm run build`
+4. Output directory: `dist`
+
+**Étape 3 — Variables d'environnement Vercel**
+1. Aller à `Settings` → `Environment Variables`
+2. Ajouter:
+```
+VITE_API_URL=https://api.gaspass.store
 ```
 
-### 3. Tester l'upload multer
+**Étape 4 — Domain personnalisé**
+1. Dans Vercel, aller à `Settings` → `Domains`
+2. Ajouter: `gaspass.store`
+3. Pointer les DNS du domaine vers Vercel
 
+**Étape 5 — Déploiement auto**
 ```bash
-# Créer une image test
-echo "fake image data" > test.jpg
-
-# Upload (admin seulement)
-curl -X POST http://localhost:5000/api/upload \
-  -H "Authorization: Bearer ADMIN_TOKEN" \
-  -F "image=@./test.jpg"
-
-# Réponse attendue:
-# {
-#   "success": true,
-#   "filename": "1713607200000-abc12345.jpg",
-#   "url": "/uploads/1713607200000-abc12345.jpg",
-#   "size": 15,
-#   "mimetype": "image/jpeg"
-# }
+git push origin main
+# Vercel détecte et déploie automatiquement
 ```
 
-### 4. Tester les logs (Production mode)
+✅ Frontend prêt à `https://gaspass.store`
 
-```bash
-# Démarrer en mode production
-NODE_ENV=production npm start
+---
 
-# Les logs JSON doivent être écrits dans:
-tail -f logs/combined.log
-tail -f logs/error.log
+### DNS Configuration
+
+Sur votre registrar (Namecheap, GoDaddy, etc.):
+
 ```
+Domain: gaspass.store
 
-### 5. Tester CORS multi-domaine
+A Records:
+┌─ api.gaspass.store  → Railway IP (fourni par Railway)
+└─ gaspass.store      → Vercel IP (fourni par Vercel)
 
-```bash
-# Dev (sans origin = autorisé)
-curl -X GET http://localhost:5000/ 
-
-# Production (avec origin validée)
-curl -X GET http://localhost:5000/ \
-  -H "Origin: https://gaspass.store"
-
-# Origine non autorisée
-curl -X GET http://localhost:5000/ \
-  -H "Origin: https://unauthorized.com"
-# ❌ Erreur attendue: "CORS: origine non autorisée"
-```
-
-### 6. Tester la restriction du profil public
-
-```bash
-# GET /api/users/:id (public)
-curl -X GET http://localhost:5000/api/users/1
-
-# Réponse attendue (minimaliste):
-# {
-#   "id": 1,
-#   "firstName": "John",
-#   "lastName": "Doe",
-#   "createdAt": "2026-04-19T10:00:00.000Z"
-# }
-# ❌ email, phone, role, address NON retournés
-```
-
-### 7. Tester l'annulation de commande (restriction utilisateur)
-
-```bash
-# Créer une commande pending
-curl -X POST http://localhost:5000/api/orders \
-  -H "Authorization: Bearer USER_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{...order data...}'
-# → Récupérer ORDER_ID
-
-# Essayer status "processing" (doit échouer)
-curl -X PUT http://localhost:5000/api/orders/ORDER_ID/status \
-  -H "Authorization: Bearer USER_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"status":"processing"}'
-# ❌ Erreur 403: "Vous ne pouvez qu'annuler votre commande"
-
-# Essayer status "cancelled" sur pending (doit marcher)
-curl -X PUT http://localhost:5000/api/orders/ORDER_ID/status \
-  -H "Authorization: Bearer USER_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"status":"cancelled"}'
-# ✅ Success
-```
-
-### 8. Tester la recherche admin orders (JSONB)
-
-```bash
-# Chercher par adresse (JSONB casting)
-curl -X GET "http://localhost:5000/api/admin/orders?search=Paris" \
-  -H "Authorization: Bearer ADMIN_TOKEN"
-
-# ✅ Ne doit plus planter, retourne les commandes avec "Paris" en shipping_address
+ou CNAME (recommandé):
+┌─ api.gaspass.store  → CNAME railway.app
+└─ gaspass.store      → CNAME cname.vercel-dns.com
 ```
 
 ---
 
-## 📊 Résumé des Patchs Appliqués
+## ✅ Checklist Production
 
-### 🔴 GROUPE 1 — Sécurité Critique (5 fichiers)
-
-| Patch | Fichier | Changement |
-|-------|---------|-----------|
-| 1 | `createAdmin.js`, `seedDb.js` | Credentials de `.env` (PAS hardcodés) |
-| 2 | `routes/telegram.js` | `/link` protégé + validation code |
-| 3 | `routes/orders.js` | GET `/:id` sécurisé (vérify token) |
-| 4 | `server.js`, `payment.js` | Stripe webhook `rawBody` → multer |
-| 5 | `scripts/seedDb.js` | Blocage `force: true` en production |
-
-### 🟠 GROUPE 2 — Fonctionnalité (5 fichiers)
-
-| Patch | Fichier | Changement |
-|-------|---------|-----------|
-| 1 | `routes/admin.js` | Superadmin séparé (JWT check) |
-| 2 | `auth.js`, `tokenBlacklist.js` | Logout = révocation token |
-| 3 | `routes/orders.js` | Retry orderNumber collision |
-| 4 | `routes/orders.js` | User ne peut QUE annuler commandes |
-| 5 | `routes/admin.js` | Recherche JSONB fixée (PostgreSQL cast) |
-
-### 🟡 GROUPE 3 — Amélioration (6 fichiers)
-
-| Patch | Fichier | Changement |
-|-------|---------|-----------|
-| 1 | `routes/users.js` | Profil public minimaliste |
-| 2 | `server.js` | Helmet + CSP headers |
-| 3 | `server.js` | CORS dynamique multi-domaine |
-| 4 | `*Controller.js`, `*routes.js` | Logger Winston (remplace console) |
-| 5 | `routes/upload.js` | Multer (remplace express-fileupload) |
-| 6 | `routes/telegram.js` | Codes Telegram en DB (PAS mémoire) |
+- [ ] Variables d'env Railway configurées
+- [ ] PostgreSQL Railway créée
+- [ ] Node.js API en HTTPS sur `api.gaspass.store`
+- [ ] Frontend Vercel en HTTPS sur `gaspass.store`
+- [ ] DNS pointant vers Railway (API) et Vercel (Frontend)
+- [ ] JWT_SECRET généré aléatoirement (pas de hardcoding)
+- [ ] Stripe clés LIVE configurées
+- [ ] Telegram bot token configuré (8717133590:AAF34M_3TuBUiP0kjTJ1P3wFtyrrqNj5Vic)
+- [ ] CORS config: `FRONTEND_URL=https://gaspass.store`
+- [ ] `.env` jamais commité (dans `.gitignore`)
+- [ ] `.env.example` en template (commité)
 
 ---
 
-## 🛡️ Sécurité — Checklist
-
-- ✅ Credentials en `.env` (jamais hardcodés)
-- ✅ `.env` dans `.gitignore` (jamais commité)
-- ✅ `.env.example` en template (commité)
-- ✅ Helmet + CSP headers activés
-- ✅ CORS dynamique et validé
-- ✅ JWT tokens révocables (logout)
-- ✅ Superadmin séparé des admins
-- ✅ Profil public minimaliste
-- ✅ Upload validé (type + taille)
-- ✅ Logs structurés (Winston)
-- ✅ Codes Telegram en DB (persistent)
-- ✅ OrderNumber avec retry anti-collision
-- ✅ User ne peut QUE annuler ses commandes
-
----
-
-## 📝 Fichiers Git
-
-### À commiter:
-```
-backend/.env.example
-backend/utils/logger.js
-backend/models/TelegramLinkCode.js
-backend/routes/upload.js (modifié)
-backend/server.js (modifié)
-backend/middleware/auth.js (modifié)
-backend/routes/orders.js (modifié)
-backend/routes/admin.js (modifié)
-backend/routes/telegram.js (modifié)
-backend/routes/users.js (modifié)
-backend/routes/products.js (modifié)
-backend/controllers/authController.js (modifié)
-backend/services/telegramService.js (modifié)
-backend/utils/tokenBlacklist.js (modifié)
-```
-
-### À JAMAIS commiter:
-```
-backend/.env (PAS SECRET EN GIT!)
-backend/logs/ (au moins .gitkeep)
-backend/uploads/ (fichiers utilisateurs)
-node_modules/
-```
-
----
-
-## 🌍 Déploiement Production
-
-### Railway (Backend API)
-
-1. **Créer un projet Railway**
-   - Connecter repo GitHub
-   - Ajouter PostgreSQL
-   - Configurer variables d'env (voir section "Configuration de production")
-
-2. **Variables d'env Railway**
-   - `NODE_ENV=production`
-   - `SERVER_URL=https://api.gaspass.store`
-   - `FRONTEND_URL=https://gaspass.store,https://www.gaspass.store`
-   - Tous les secrets (JWT, Stripe, Telegram, etc.)
-
-3. **Deploy**
-   ```bash
-   git push origin main
-   # Railway détecte Node.js et lance automatiquement
-   # npm install && npm start
-   ```
-
-### Vercel (Frontend React)
-
-1. **Créer projet Vercel**
-   - Importer repo
-   - Framework: Vite/React
-
-2. **Variables d'env Vercel**
-   - `VITE_API_URL=https://api.gaspass.store`
-
-3. **Deploy**
-   ```bash
-   git push origin main
-   # Auto-build et deploy
-   ```
-
-### DNS Pointing
-
-```
-gaspass.store          → Vercel IP (Frontend)
-api.gaspass.store      → Railway IP (Backend API)
-```
-
-Utilisez votre registrar (Namecheap, GoDaddy, etc.)
-
----
-
-## 🔧 Troubleshooting
-
-### "Port 5000 already in use"
-```bash
-# Trouver le PID
-lsof -i :5000
-# Tuer le process
-kill -9 <PID>
-```
-
-### "CORS: origine non autorisée"
-```bash
-# Vérifier .env
-echo $FRONTEND_URL
-# Doit contenir votre domaine séparé par virgule
-```
-
-### "Token révoqué" après logout
-✅ Comportement normal! Le token est blacklisté.
-
-### Logs ne s'affichent pas
-```bash
-# Vérifier NODE_ENV
-echo $NODE_ENV
-# En production: check logs/combined.log
-tail -f backend/logs/combined.log
-```
-
-### Telegram codes ne se créent pas
-```bash
-# Vérifier la migration
-node backend/scripts/syncDb.js
-# Check DB: SELECT * FROM "TelegramLinkCodes";
-```
-
----
-
-## 📞 Support & Questions
-
-Pour chaque groupe de patchs, consultez le ticket GitHub correspondant:
-- **GROUPE 1** (Sécurité critique) — #001
-- **GROUPE 2** (Fonctionnalité) — #002
-- **GROUPE 3** (Amélioration) — #003
-
----
-
-**Version:** 1.0  
+**Version:** 2.0  
 **Date:** 19 avril 2026  
-**Statut:** ✅ Complet & Testé
+**Statut:** ✅ Production-Ready
