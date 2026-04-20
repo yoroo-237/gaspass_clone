@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import { getFaqs } from '../api/client'
 
 function useReveal(threshold = 0.15) {
   const ref = React.useRef(null)
@@ -55,15 +56,25 @@ const GLOBAL_CSS = `
   }
 `
 
-const FAQS = [
-  { q: 'How fast is Shipping?',                         a: 'We ship within 24–48 hours of order confirmation via discreet, stealthy packaging.' },
-  { q: 'When will my order be fulfilled?',              a: 'Orders are typically processed same day if placed before 2PM. You will receive tracking once shipped.' },
-  { q: 'What mail carriers does the GasPass team use?', a: 'We use trusted carriers with full tracking. Packaging is 100% discreet with no identifiable branding.' },
-]
-
 function FAQ() {
   const [open, setOpen] = React.useState(null)
+  const [faqs, setFaqs] = React.useState([])
+  const [loading, setLoading] = React.useState(true)
   const ref = useReveal(0.15)
+
+  React.useEffect(() => {
+    const fetch = async () => {
+      try {
+        const data = await getFaqs()
+        setFaqs(Array.isArray(data) ? data : [])
+      } catch (err) {
+        setFaqs([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetch()
+  }, [])
 
   return (
     <div ref={ref} className="reveal" style={{ marginTop: 100 }}>
@@ -91,9 +102,9 @@ function FAQ() {
       </h2>
 
       <div style={{ maxWidth: 720, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {FAQS.map((faq, i) => (
+        {faqs.map((faq, i) => (
           <div
-            key={i}
+            key={faq.id || i}
             className="faq-item"
             style={{
               border: '1px solid rgba(255,255,255,0.08)',

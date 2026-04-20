@@ -19,6 +19,7 @@ import uploadRouter from './routes/upload.js';
 import categoriesRouter from './routes/categories.js';
 import reviewsRouter from './routes/reviews.js';
 import cartRouter from './routes/cart.js';
+import contentRouter from './routes/content.js';
 
 dotenv.config();
 
@@ -91,6 +92,7 @@ app.use('/api/upload',      uploadRouter);
 app.use('/api/categories',  categoriesRouter);
 app.use('/api/reviews',     reviewsRouter);
 app.use('/api/cart',        cartRouter);
+app.use('/api/content',     contentRouter);
 
 // Serve uploaded files
 app.use('/uploads', express.static('uploads'));

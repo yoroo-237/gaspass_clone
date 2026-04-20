@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, Pencil, Trash2, ArrowLeft } from 'lucide-react'
+import { Plus, Pencil, Trash2, ArrowLeft, X } from 'lucide-react'
+import { getAdminProducts, createProduct, updateProduct, deleteProduct, uploadImage } from '../../api/client'
 import '../../styles/admin.css'
 
-const EMPTY = { name:'', slug:'', grade:'', tier:'', thc:'', cbd:'', type:'', description:'', active:true }
+const EMPTY = { name:'', slug:'', grade:'', tier:'', thc:'', cbd:'', type:'', description:'', active:true, images:[] }
 
 export default function AdminProducts() {
   const [products, setProducts] = useState([])
@@ -11,13 +12,13 @@ export default function AdminProducts() {
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState(EMPTY)
   const [saving, setSaving] = useState(false)
+  const [selectedFiles, setSelectedFiles] = useState([])
+  const [uploadingImages, setUploadingImages] = useState(false)
 
   const fetchProducts = async () => {
     setLoading(true)
     try {
-      const token = localStorage.getItem('adminToken')
-      const res = await fetch('http://localhost:5000/api/admin/products', { headers: { Authorization: `Bearer ${token}` } })
-      const data = await res.json()
+      const data = await getAdminProducts(0, 100)
       setProducts(data.products || [])
     } catch (err) { console.error(err) }
     finally { setLoading(false) }
@@ -25,37 +26,85 @@ export default function AdminProducts() {
 
   useEffect(() => { fetchProducts() }, [])
 
-  const resetForm = () => { setEditingId(null); setForm(EMPTY); setShowForm(false) }
+  const resetForm = () => { setEditingId(null); setForm(EMPTY); setShowForm(false); setSelectedFiles([]) }
+
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files || [])
+    setSelectedFiles(files)
+  }
+
+  const removeImage = (idx) => {
+    setForm(p => ({
+      ...p,
+      images: (p.images || []).filter((_, i) => i !== idx)
+    }))
+  }
+
+  const removeSelectedFile = (idx) => {
+    setSelectedFiles(files => files.filter((_, i) => i !== idx))
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
+    
     try {
-      const token = localStorage.getItem('adminToken')
-      const url = editingId
-        ? `http://localhost:5000/api/admin/products/${editingId}`
-        : 'http://localhost:5000/api/admin/products'
-      const res = await fetch(url, {
-        method: editingId ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(form)
-      })
-      if (res.ok) { resetForm(); fetchProducts() }
-      else alert('Erreur lors de la sauvegarde')
-    } catch (err) { console.error(err) }
-    finally { setSaving(false) }
+      let uploadedUrls = form.images || []
+      
+      // Upload new images if selected
+      if (selectedFiles.length > 0) {
+        setUploadingImages(true)
+        const urls = []
+        for (const file of selectedFiles) {
+          try {
+            const result = await uploadImage(file)
+            if (result.url) urls.push(result.url)
+          } catch (err) {
+            console.error('Image upload error:', err)
+            alert(`Erreur upload: ${err.message}`)
+          }
+        }
+        uploadedUrls = [...uploadedUrls, ...urls]
+        setUploadingImages(false)
+      }
+      
+      const formData = { ...form, images: uploadedUrls }
+      
+      if (editingId) {
+        await updateProduct(editingId, formData)
+      } else {
+        await createProduct(formData)
+      }
+      resetForm()
+      setSelectedFiles([])
+      fetchProducts()
+    } catch (err) { 
+      console.error(err)
+      alert('Erreur lors de la sauvegarde')
+    } finally { 
+      setSaving(false)
+      setUploadingImages(false)
+    }
   }
 
-  const handleEdit = (p) => { setForm(p); setEditingId(p.id); setShowForm(true); window.scrollTo({ top: 0, behavior: 'smooth' }) }
+  const handleEdit = (p) => { 
+    const productWithImages = {
+      ...p,
+      images: (p.images || []).map(img => 
+        img.startsWith('http') || img.startsWith('/') ? img : `/uploads/${img}`
+      )
+    }
+    setForm(productWithImages)
+    setEditingId(p.id)
+    setShowForm(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   const handleDelete = async (id) => {
     if (!confirm('Supprimer ce produit ?')) return
     try {
-      const token = localStorage.getItem('adminToken')
-      const res = await fetch(`http://localhost:5000/api/admin/products/${id}`, {
-        method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
-      })
-      if (res.ok) fetchProducts()
+      await deleteProduct(id)
+      fetchProducts()
     } catch (err) { console.error(err) }
   }
 
@@ -125,13 +174,97 @@ export default function AdminProducts() {
               <textarea className="admin-form-textarea" placeholder="Description complète…"
                 value={form.description} onChange={set('description')} />
             </div>
+
+            {/* Images section */}
+            <div className="admin-form-group" style={{ marginBottom: 20 }}>
+              <label className="admin-form-label">Images</label>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="admin-form-input"
+                style={{ cursor: 'pointer' }}
+              />
+              <p style={{ fontSize: 12, color: '#666', marginTop: 8 }}>
+                (JPEG, PNG, WebP, GIF — Max 5MB par image)
+              </p>
+
+              {/* Preview images existantes */}
+              {form.images && form.images.length > 0 && (
+                <div style={{ marginTop: 16 }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, color: '#111' }}>Images existantes:</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: 8 }}>
+                    {form.images.map((url, idx) => (
+                      <div key={idx} style={{ position: 'relative', aspectRatio: '1', borderRadius: 4, overflow: 'hidden', border: '1px solid #ddd' }}>
+                        <img src={url} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(idx)}
+                          style={{
+                            position: 'absolute',
+                            top: 2,
+                            right: 2,
+                            background: 'rgba(0,0,0,0.7)',
+                            border: 'none',
+                            color: 'white',
+                            padding: 2,
+                            borderRadius: 2,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Preview fichiers sélectionnés */}
+              {selectedFiles.length > 0 && (
+                <div style={{ marginTop: 16 }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, color: '#111' }}>À uploader:</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: 8 }}>
+                    {selectedFiles.map((file, idx) => (
+                      <div key={idx} style={{ position: 'relative', aspectRatio: '1', borderRadius: 4, overflow: 'hidden', border: '2px dashed #ba0b20', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(186,11,32,0.05)' }}>
+                        <div style={{ textAlign: 'center', fontSize: 10, color: '#ba0b20' }}>
+                          <div>{file.name.substring(0, 15)}</div>
+                          <button
+                            type="button"
+                            onClick={() => removeSelectedFile(idx)}
+                            style={{
+                              marginTop: 4,
+                              background: '#ba0b20',
+                              color: 'white',
+                              border: 'none',
+                              padding: '2px 6px',
+                              borderRadius: 2,
+                              cursor: 'pointer',
+                              fontSize: 10,
+                            }}
+                          >
+                            Retirer
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
             <label className="admin-checkbox-row" style={{ marginBottom: 24 }}>
               <input type="checkbox" checked={form.active} onChange={setCheck('active')} />
               Produit actif (visible sur la boutique)
             </label>
             <div className="admin-form-actions">
-              <button type="submit" disabled={saving} className="admin-btn admin-btn-primary">
-                {saving
+              <button type="submit" disabled={saving || uploadingImages} className="admin-btn admin-btn-primary">
+                {uploadingImages
+                  ? <><div className="admin-spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> Upload images…</>
+                  : saving
                   ? <><div className="admin-spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> Enregistrement…</>
                   : editingId ? 'Enregistrer' : 'Créer le Produit'
                 }

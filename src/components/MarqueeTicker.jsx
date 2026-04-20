@@ -1,17 +1,25 @@
-import React from 'react'
-
-const ITEMS = [
-  'SMALL BATCH EXOTICS',
-  'STEALTHY PACKAGING',
-  'QUICK DELIVERY',
-  'UNIQUE STRAINS',
-  'QUALITY SMOKE',
-  'LOWEST PRICES',
-]
-
-const all = [...ITEMS, ...ITEMS, ...ITEMS, ...ITEMS]
+import React, { useState, useEffect } from 'react'
+import { getTickerItems } from '../api/client'
 
 export default function MarqueeTicker() {
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const data = await getTickerItems()
+        setItems(Array.isArray(data) ? data : [])
+      } catch (err) {
+        setItems([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetch()
+  }, [])
+
+  const all = loading ? [] : [...items, ...items, ...items, ...items]
   return (
     <div style={{
       background: '#000000',

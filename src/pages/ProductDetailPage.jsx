@@ -1,299 +1,7 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import useCart from '../hooks/useCart'
-
-// ── PRODUCT DATA — all 19, slugs match ShopCategoryPage ──────────────────────
-const PRODUCTS = [
-  // 87 Regular
-  {
-    id: 1,
-    slug: 'gelonade-smalls',
-    name: 'GELONADE SMALLS',
-    badge: 'New',
-    strain: 'Sativa',
-    grade: '87 Regular',
-    thc: '22%',
-    prices: { '3.5g': 35, '7g': 65, '28g': 200 },
-    images: [
-      '/products/gelonade-smalls.jpg',
-      '/products/gelonade-smalls.jpg',
-      '/products/gelonade-smalls.jpg',
-    ],
-  },
-  {
-    id: 2,
-    slug: 'biscotti-cake',
-    name: 'BISCOTTI CAKE',
-    badge: 'New',
-    strain: 'Indica',
-    grade: '87 Regular',
-    thc: '24%',
-    prices: { '3.5g': 35, '7g': 65, '28g': 200 },
-    images: [
-      '/products/biscotti-cake.jpg',
-      '/products/biscotti-cake.jpg',
-      '/products/biscotti-cake.jpg',
-    ],
-  },
-  {
-    id: 3,
-    slug: 'sunset-sherbet',
-    name: 'SUNSET SHERBET',
-    badge: null,
-    strain: 'Hybrid',
-    grade: '87 Regular',
-    thc: '21%',
-    prices: { '3.5g': 35, '7g': 65, '28g': 200 },
-    images: [
-      '/products/sunset-sherbet.jpg',
-      '/products/sunset-sherbet.jpg',
-      '/products/sunset-sherbet.jpg',
-    ],
-  },
-  // 89 Premium
-  {
-    id: 4,
-    slug: 'purple-lemonade',
-    name: 'PURPLE LEMONADE',
-    badge: 'New',
-    strain: 'Indica',
-    grade: '89 Premium',
-    thc: '26%',
-    prices: { '3.5g': 45, '7g': 85, '28g': 260 },
-    images: [
-      'public/crE5g6o6sQNSWbWVCYXUHUktB1Y.jpg',
-      'public/crE5g6o6sQNSWbWVCYXUHUktB1Y_2.jpg',
-      'public/crE5g6o6sQNSWbWVCYXUHUktB1Y_3.jpg',
-    ],
-  },
-  {
-    id: 5,
-    slug: 'sundae-driver',
-    name: 'SUNDAE DRIVER',
-    badge: 'New',
-    strain: 'Hybrid',
-    grade: '89 Premium',
-    thc: '27%',
-    prices: { '3.5g': 45, '7g': 85, '28g': 260 },
-    images: [
-      'public/6dnHHpKmlxZ5iN3DroU9xjuMu1s.jpg',
-      'public/6dnHHpKmlxZ5iN3DroU9xjuMu1s_2.jpg',
-      'public/6dnHHpKmlxZ5iN3DroU9xjuMu1s_3.jpg',
-    ],
-  },
-  {
-    id: 6,
-    slug: 'mac-1',
-    name: 'MAC 1',
-    badge: null,
-    strain: 'Hybrid',
-    grade: '89 Premium',
-    thc: '25%',
-    prices: { '3.5g': 45, '7g': 85, '28g': 260 },
-    images: [
-      '/products/mac1.jpg',
-      '/products/mac1.jpg',
-      '/products/mac1.jpg',
-    ],
-  },
-  {
-    id: 7,
-    slug: 'permanent-marker',
-    name: 'PERMANENT MARKER',
-    badge: 'New',
-    strain: 'Hybrid',
-    grade: '89 Premium',
-    thc: '27%',
-    prices: { '3.5g': 45, '7g': 85, '28g': 260 },
-    images: [
-      'public/EZVdTIllwqZp3jRzDmQ87WGvg.jpg',
-      'public/EZVdTIllwqZp3jRzDmQ87WGvg_2.jpg',
-      'public/EZVdTIllwqZp3jRzDmQ87WGvg_3.jpg',
-    ],
-  },
-  // 91 Supreme
-  {
-    id: 8,
-    slug: 'hitch-hiker',
-    name: 'HITCH HIKER',
-    badge: 'New',
-    strain: 'Hybrid',
-    grade: '91 Supreme',
-    thc: '30%',
-    prices: { '3.5g': 55, '7g': 100, '28g': 320 },
-    images: [
-      'public/JZlZpcElgglkOzxiEgbXIpsYy4.jpg',
-      'public/JZlZpcElgglkOzxiEgbXIpsYy4_2.jpg',
-      'public/JZlZpcElgglkOzxiEgbXIpsYy4_3.jpg',
-    ],
-  },
-  {
-    id: 9,
-    slug: 'jealousy',
-    name: 'JEALOUSY',
-    badge: null,
-    strain: 'Hybrid',
-    grade: '91 Supreme',
-    thc: '29%',
-    prices: { '3.5g': 55, '7g': 100, '28g': 320 },
-    images: [
-      '/products/jealousy.jpg',
-      '/products/jealousy.jpg',
-      '/products/jealousy.jpg',
-    ],
-  },
-  {
-    id: 10,
-    slug: 'chemdog',
-    name: 'CHEMDOG',
-    badge: 'New',
-    strain: 'Sativa',
-    grade: '91 Supreme',
-    thc: '31%',
-    prices: { '3.5g': 55, '7g': 100, '28g': 320 },
-    images: [
-      '/products/chemdog.jpg',
-      '/products/chemdog.jpg',
-      '/products/chemdog.jpg',
-    ],
-  },
-  {
-    id: 11,
-    slug: 'berry-nebula',
-    name: 'BERRY NEBULA',
-    badge: null,
-    strain: 'Indica',
-    grade: '91 Supreme',
-    thc: '30%',
-    prices: { '3.5g': 55, '7g': 100, '28g': 320 },
-    images: [
-      '/products/berry-nebula.jpg',
-      '/products/berry-nebula.jpg',
-      '/products/berry-nebula.jpg',
-    ],
-  },
-  {
-    id: 12,
-    slug: 'jungle-juice',
-    name: 'JUNGLE JUICE',
-    badge: 'New',
-    strain: 'Sativa',
-    grade: '91 Supreme',
-    thc: '32%',
-    prices: { '3.5g': 55, '7g': 100, '28g': 320 },
-    images: [
-      '/products/jungle-juice.jpg',
-      '/products/jungle-juice.jpg',
-      '/products/jungle-juice.jpg',
-    ],
-  },
-  // 93 High Octane
-  {
-    id: 13,
-    slug: 'runtz-og',
-    name: 'RUNTZ OG',
-    badge: 'New',
-    strain: 'Hybrid',
-    grade: '93 High Octane',
-    thc: '34%',
-    prices: { '3.5g': 65, '7g': 120, '28g': 380 },
-    images: [
-      '/products/runtz-og.jpg',
-      '/products/runtz-og.jpg',
-      '/products/runtz-og.jpg',
-    ],
-  },
-  {
-    id: 14,
-    slug: 'exotic-zkittlez',
-    name: 'EXOTIC ZKITTLEZ',
-    badge: 'New',
-    strain: 'Indica',
-    grade: '93 High Octane',
-    thc: '33%',
-    prices: { '3.5g': 65, '7g': 120, '28g': 380 },
-    images: [
-      '/products/exotic-zkittlez.jpg',
-      '/products/exotic-zkittlez.jpg',
-      '/products/exotic-zkittlez.jpg',
-    ],
-  },
-  {
-    id: 15,
-    slug: 'wedding-cake-x',
-    name: 'WEDDING CAKE X',
-    badge: null,
-    strain: 'Hybrid',
-    grade: '93 High Octane',
-    thc: '35%',
-    prices: { '3.5g': 65, '7g': 120, '28g': 380 },
-    images: [
-      '/products/wedding-cake-x.jpg',
-      '/products/wedding-cake-x.jpg',
-      '/products/wedding-cake-x.jpg',
-    ],
-  },
-  {
-    id: 16,
-    slug: 'gary-payton',
-    name: 'GARY PAYTON',
-    badge: 'New',
-    strain: 'Hybrid',
-    grade: '93 High Octane',
-    thc: '33%',
-    prices: { '3.5g': 65, '7g': 120, '28g': 380 },
-    images: [
-      '/products/gary-payton.jpg',
-      '/products/gary-payton.jpg',
-      '/products/gary-payton.jpg',
-    ],
-  },
-  {
-    id: 17,
-    slug: 'purple-punch',
-    name: 'PURPLE PUNCH',
-    badge: 'New',
-    strain: 'Indica',
-    grade: '93 High Octane',
-    thc: '32%',
-    prices: { '3.5g': 65, '7g': 120, '28g': 380 },
-    images: [
-      '/products/purple-punch.jpg',
-      '/products/purple-punch.jpg',
-      '/products/purple-punch.jpg',
-    ],
-  },
-  {
-    id: 18,
-    slug: 'ice-cream-cake',
-    name: 'ICE CREAM CAKE',
-    badge: null,
-    strain: 'Hybrid',
-    grade: '93 High Octane',
-    thc: '34%',
-    prices: { '3.5g': 65, '7g': 120, '28g': 380 },
-    images: [
-      '/products/ice-cream-cake.jpg',
-      '/products/ice-cream-cake.jpg',
-      '/products/ice-cream-cake.jpg',
-    ],
-  },
-  {
-    id: 19,
-    slug: 'cereal-milk',
-    name: 'CEREAL MILK',
-    badge: 'New',
-    strain: 'Hybrid',
-    grade: '93 High Octane',
-    thc: '33%',
-    prices: { '3.5g': 65, '7g': 120, '28g': 380 },
-    images: [
-      '/products/cereal-milk.jpg',
-      '/products/cereal-milk.jpg',
-      '/products/cereal-milk.jpg',
-    ],
-  },
-]
+import { getProduct, getProducts } from '../api/client'
 
 const WEIGHTS = ['3.5g', '7g', '28g']
 
@@ -303,7 +11,10 @@ export default function ProductDetailPage() {
   const navigate = useNavigate()
   const { addToCart } = useCart()
 
-  const product = PRODUCTS.find((p) => p.slug === id)
+  const [product, setProduct] = useState(null)
+  const [related, setRelated] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   const [activeImg, setActiveImg]           = useState(0)
   const [selectedWeight, setSelectedWeight] = useState('3.5g')
@@ -311,45 +22,74 @@ export default function ProductDetailPage() {
   const [expanded, setExpanded]             = useState(false)
   const [addedToCart, setAddedToCart]       = useState(false)
 
-  const images = product?.images ?? []
-  const price  = product?.prices?.[selectedWeight] ?? 0
-
-  const decrement = useCallback(() => setQty((q) => Math.max(1, q - 1)), [])
-  const increment = useCallback(() => setQty((q) => q + 1), [])
-
-  const handleAddToCart = () => {
-    if (!product) return
-    // CartContext.addToCart(product, weight, quantity)
-    // product must have: id, name, prices{weight: price}, images[0] as image
-    const productForCart = {
-      ...product,
-      image: product.images[0],
+  // Fetch product and related products
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const productData = await getProduct(id)
+        setProduct(productData)
+        
+        // Fetch related products
+        const allProducts = await getProducts()
+        const filteredRelated = allProducts
+          .filter((p) => p.slug !== id)
+          .slice(0, 4)
+        setRelated(filteredRelated)
+      } catch (err) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
     }
-    addToCart(productForCart, selectedWeight, qty)
-    setAddedToCart(true)
-    setTimeout(() => setAddedToCart(false), 2000)
-    // Open the cart modal via custom event
-    window.dispatchEvent(new CustomEvent('gp:open-cart'))
-  }
 
-  // Related products: all except current, max 4
-  const related = PRODUCTS.filter((p) => p.slug !== id).slice(0, 4)
+    if (id) {
+      fetchData()
+    }
+  }, [id])
 
-  if (!product) {
+  if (loading) {
     return (
       <div style={{ padding: '120px 40px', textAlign: 'center', fontFamily: 'sans-serif' }}>
-        <h2>Product not found.</h2>
+        <p>Chargement du produit...</p>
+      </div>
+    )
+  }
+
+  if (error || !product) {
+    return (
+      <div style={{ padding: '120px 40px', textAlign: 'center', fontFamily: 'sans-serif' }}>
+        <h2>{error ? 'Erreur' : 'Produit non trouvé'}</h2>
         <p style={{ color: '#777', marginBottom: 24 }}>
-          The product you're looking for doesn't exist or the link may be incorrect.
+          {error ? `Erreur: ${error}` : "Le produit que vous cherchez n'existe pas ou le lien peut être incorrect."}
         </p>
         <button
           onClick={() => navigate('/shop')}
           style={{ marginTop: 8, padding: '12px 28px', cursor: 'pointer', fontSize: 15, background: '#111', color: '#fff', border: 'none', borderRadius: 8 }}
         >
-          ← Back to Shop
+          ← Retour à la boutique
         </button>
       </div>
     )
+  }
+
+  // Get images and price from product data
+  const images = product?.images ?? []
+  const price = product?.pricing?.[selectedWeight] ?? product?.prices?.[selectedWeight] ?? 0
+  
+  const decrement = useCallback(() => setQty((q) => Math.max(1, q - 1)), [])
+  const increment = useCallback(() => setQty((q) => q + 1), [])
+
+  const handleAddToCart = () => {
+    if (!product) return
+    const productForCart = {
+      ...product,
+      image: product.images?.[0] || product.images?.[0],
+    }
+    addToCart(productForCart, selectedWeight, qty)
+    setAddedToCart(true)
+    setTimeout(() => setAddedToCart(false), 2000)
+    window.dispatchEvent(new CustomEvent('gp:open-cart'))
   }
 
   return (

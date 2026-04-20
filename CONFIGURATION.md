@@ -1,5 +1,5 @@
 # � Configuration & Déploiement — GasPass
-
+**Admin Telegram:** @gaspassreal
 ## 🔐 Variables d'Environnement
 
 ### Backend `.env` — Local Development
@@ -31,7 +31,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 
 # Telegram
 TELEGRAM_BOT_TOKEN=8717133590:AAF34M_3TuBUiP0kjTJ1P3wFtyrrqNj5Vic
-TELEGRAM_ADMIN_ID=ton_user_id_telegram
+TELEGRAM_ADMIN_ID=<obtenir_avec_@userinfobot>
 TELEGRAM_ADMIN_GROUP_ID=-1001234567890
 TELEGRAM_WEBHOOK_URL=http://localhost:5000/api/telegram/webhook
 

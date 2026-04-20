@@ -1,33 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { getProducts } from '../api/client'
 
-const ALL_PRODUCTS = [
-  // 87 Regular
-  { id: 1,  slug: 'gelonade-smalls',  name: 'GELONADE SMALLS',  grade: '87 Regular',     thc: '22%', weights: ['3.5g','7g','28g'], prices: { '3.5g': 35, '7g': 65,  '28g': 200 }, images: ['/products/gelonade-smalls.jpg', '/products/gelonade-smalls-2.jpg', '/products/gelonade-smalls-3.jpg'],   isNew: true  },
-  { id: 2,  slug: 'biscotti-cake',    name: 'BISCOTTI CAKE',    grade: '87 Regular',     thc: '24%', weights: ['3.5g','7g','28g'], prices: { '3.5g': 35, '7g': 65,  '28g': 200 }, images: ['/products/biscotti-cake.jpg', '/products/biscotti-cake-2.jpg', '/products/biscotti-cake-3.jpg'],      isNew: true  },
-  { id: 3,  slug: 'sunset-sherbet',   name: 'SUNSET SHERBET',   grade: '87 Regular',     thc: '21%', weights: ['3.5g','7g','28g'], prices: { '3.5g': 35, '7g': 65,  '28g': 200 }, images: ['/products/sunset-sherbet.jpg', '/products/sunset-sherbet-2.jpg', '/products/sunset-sherbet-3.jpg'],     isNew: false },
-  // 89 Premium
-  { id: 4,  slug: 'purple-lemonade',  name: 'PURPLE LEMONADE',  grade: '89 Premium',     thc: '26%', weights: ['3.5g','7g','28g'], prices: { '3.5g': 45, '7g': 85,  '28g': 260 }, images: ['public/crE5g6o6sQNSWbWVCYXUHUktB1Y.jpg', '/products/purple-lemonade-2.jpg', '/products/purple-lemonade-3.jpg'],    isNew: true  },
-  { id: 5,  slug: 'sundae-driver',    name: 'SUNDAE DRIVER',    grade: '89 Premium',     thc: '27%', weights: ['3.5g','7g','28g'], prices: { '3.5g': 45, '7g': 85,  '28g': 260 }, images: ['public/6dnHHpKmlxZ5iN3DroU9xjuMu1s.jpg', '/products/sundae-driver-2.jpg', '/products/sundae-driver-3.jpg'],    isNew: true  },
-  { id: 6,  slug: 'mac-1',            name: 'MAC 1',            grade: '89 Premium',     thc: '25%', weights: ['3.5g','7g','28g'], prices: { '3.5g': 45, '7g': 85,  '28g': 260 }, images: ['/products/mac1.jpg', '/products/mac1-2.jpg', '/products/mac1-3.jpg'],               isNew: false },
-  { id: 7,  slug: 'permanent-marker', name: 'PERMANENT MARKER', grade: '89 Premium',     thc: '27%', weights: ['3.5g','7g','28g'], prices: { '3.5g': 45, '7g': 85,  '28g': 260 }, images: ['public/EZVdTIllwqZp3jRzDmQ87WGvg.jpg', '/products/permanent-marker-2.jpg', '/products/permanent-marker-3.jpg'],   isNew: true  },
-  // 91 Supreme
-  { id: 8,  slug: 'hitch-hiker',      name: 'HITCH HIKER',      grade: '91 Supreme',     thc: '30%', weights: ['3.5g','7g','28g'], prices: { '3.5g': 55, '7g': 100, '28g': 320 }, images: ['public/JZlZpcElgglkOzxiEgbXIpsYy4.jpg', '/products/hitch-hiker-2.jpg', '/products/hitch-hiker-3.jpg'],        isNew: true  },
-  { id: 9,  slug: 'jealousy',         name: 'JEALOUSY',         grade: '91 Supreme',     thc: '29%', weights: ['3.5g','7g','28g'], prices: { '3.5g': 55, '7g': 100, '28g': 320 }, images: ['/products/jealousy.jpg', '/products/jealousy-2.jpg', '/products/jealousy-3.jpg'],           isNew: false },
-  { id: 10, slug: 'chemdog',          name: 'CHEMDOG',          grade: '91 Supreme',     thc: '31%', weights: ['3.5g','7g','28g'], prices: { '3.5g': 55, '7g': 100, '28g': 320 }, images: ['/products/chemdog.jpg', '/products/chemdog-2.jpg', '/products/chemdog-3.jpg'],            isNew: true  },
-  { id: 11, slug: 'berry-nebula',     name: 'BERRY NEBULA',     grade: '91 Supreme',     thc: '30%', weights: ['3.5g','7g','28g'], prices: { '3.5g': 55, '7g': 100, '28g': 320 }, images: ['/products/berry-nebula.jpg', '/products/berry-nebula-2.jpg', '/products/berry-nebula-3.jpg'],       isNew: false },
-  { id: 12, slug: 'jungle-juice',     name: 'JUNGLE JUICE',     grade: '91 Supreme',     thc: '32%', weights: ['3.5g','7g','28g'], prices: { '3.5g': 55, '7g': 100, '28g': 320 }, images: ['/products/jungle-juice.jpg', '/products/jungle-juice-2.jpg', '/products/jungle-juice-3.jpg'],       isNew: true  },
-  // 93 High Octane
-  { id: 13, slug: 'runtz-og',         name: 'RUNTZ OG',         grade: '93 High Octane', thc: '34%', weights: ['3.5g','7g','28g'], prices: { '3.5g': 65, '7g': 120, '28g': 380 }, images: ['/products/runtz-og.jpg', '/products/runtz-og-2.jpg', '/products/runtz-og-3.jpg'],          isNew: true  },
-  { id: 14, slug: 'exotic-zkittlez',  name: 'EXOTIC ZKITTLEZ',  grade: '93 High Octane', thc: '33%', weights: ['3.5g','7g','28g'], prices: { '3.5g': 65, '7g': 120, '28g': 380 }, images: ['/products/exotic-zkittlez.jpg', '/products/exotic-zkittlez-2.jpg', '/products/exotic-zkittlez-3.jpg'],   isNew: true  },
-  { id: 15, slug: 'wedding-cake-x',   name: 'WEDDING CAKE X',   grade: '93 High Octane', thc: '35%', weights: ['3.5g','7g','28g'], prices: { '3.5g': 65, '7g': 120, '28g': 380 }, images: ['/products/wedding-cake-x.jpg', '/products/wedding-cake-x-2.jpg', '/products/wedding-cake-x-3.jpg'],    isNew: false },
-  { id: 16, slug: 'gary-payton',      name: 'GARY PAYTON',      grade: '93 High Octane', thc: '33%', weights: ['3.5g','7g','28g'], prices: { '3.5g': 65, '7g': 120, '28g': 380 }, images: ['/products/gary-payton.jpg', '/products/gary-payton-2.jpg', '/products/gary-payton-3.jpg'],       isNew: true  },
-  { id: 17, slug: 'purple-punch',     name: 'PURPLE PUNCH',     grade: '93 High Octane', thc: '32%', weights: ['3.5g','7g','28g'], prices: { '3.5g': 65, '7g': 120, '28g': 380 }, images: ['/products/purple-punch.jpg', '/products/purple-punch-2.jpg', '/products/purple-punch-3.jpg'],      isNew: true  },
-  { id: 18, slug: 'ice-cream-cake',   name: 'ICE CREAM CAKE',   grade: '93 High Octane', thc: '34%', weights: ['3.5g','7g','28g'], prices: { '3.5g': 65, '7g': 120, '28g': 380 }, images: ['/products/ice-cream-cake.jpg', '/products/ice-cream-cake-2.jpg', '/products/ice-cream-cake-3.jpg'],    isNew: false },
-  { id: 19, slug: 'cereal-milk',      name: 'CEREAL MILK',      grade: '93 High Octane', thc: '33%', weights: ['3.5g','7g','28g'], prices: { '3.5g': 65, '7g': 120, '28g': 380 }, images: ['/products/cereal-milk.jpg', '/products/cereal-milk-2.jpg', '/products/cereal-milk-3.jpg'],       isNew: true  },
-]
-
-const FILTERS = ['All', '87 Regular', '89 Premium', '91 Supreme', '93 High Octane']
+const GRADE_FILTERS = ['All', '87 Regular', '89 Premium', '91 Supreme', '93 High Octane']
 
 function ProductCard({ product }) {
   const navigate = useNavigate()
@@ -141,27 +116,46 @@ function ProductCard({ product }) {
 
 export default function ShopCategoryPage() {
   const location = useLocation()
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   const params = new URLSearchParams(location.search)
   const gradeParam = params.get('grade')
 
   const [activeFilter, setActiveFilter] = useState(
-    gradeParam && FILTERS.includes(gradeParam) ? gradeParam : 'All'
+    gradeParam && GRADE_FILTERS.includes(gradeParam) ? gradeParam : 'All'
   )
 
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true)
+        const grade = activeFilter === 'All' ? null : activeFilter
+        const data = await getProducts(grade ? { grade } : {})
+        setProducts(Array.isArray(data) ? data : [])
+      } catch (err) {
+        setError(err.message)
+        setProducts([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProducts()
+  }, [activeFilter])
+
+  // Sync filter from URL
   useEffect(() => {
     const p = new URLSearchParams(location.search)
     const g = p.get('grade')
-    if (g && FILTERS.includes(g)) {
+    if (g && GRADE_FILTERS.includes(g)) {
       setActiveFilter(g)
     } else {
       setActiveFilter('All')
     }
   }, [location.search])
-
-  const filtered = activeFilter === 'All'
-    ? ALL_PRODUCTS
-    : ALL_PRODUCTS.filter(p => p.grade === activeFilter)
 
   return (
     <main style={{ minHeight: '100vh', background: '#fff' }}>
@@ -327,6 +321,13 @@ export default function ShopCategoryPage() {
           font-size: 14px; font-weight: 400; color: #777; white-space: nowrap;
         }
 
+        /* ── Loading/Error ── */
+        .scp-loading, .scp-error {
+          padding: 60px 20px; text-align: center;
+          font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 16px; color: #666;
+        }
+        .scp-error { color: #d32f2f; }
+
         /* ── Responsive ── */
         @media (max-width: 1100px) { .scp-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 760px) {
@@ -360,7 +361,7 @@ export default function ShopCategoryPage() {
         <aside className="scp-sidebar">
           <div className="scp-sidebar-title">Shop</div>
           <ul className="scp-filter-list">
-            {FILTERS.map(f => (
+            {GRADE_FILTERS.map(f => (
               <li
                 key={f}
                 className="scp-filter-item"
@@ -374,11 +375,19 @@ export default function ShopCategoryPage() {
         </aside>
 
         <div>
-          <div className="scp-grid">
-            {filtered.map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {loading && <div className="scp-loading">Chargement des produits...</div>}
+          {error && <div className="scp-error">Erreur: {error}</div>}
+          {!loading && !error && (
+            <div className="scp-grid">
+              {products.length > 0 ? (
+                products.map(product => (
+                  <ProductCard key={product.id || product.slug} product={product} />
+                ))
+              ) : (
+                <div className="scp-loading" style={{ gridColumn: '1 / -1' }}>Aucun produit trouvé</div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </main>

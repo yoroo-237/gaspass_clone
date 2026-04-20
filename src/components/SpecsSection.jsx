@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import useReveal from '../hooks/useReveal.js'
+import { getSpecs } from '../api/client'
 
 // ← Remplace chaque chemin par le vrai path de ton image
 import imgFillers        from '../../public/D4HAPGqWOKT4c47k3xfsANzc1cY.png'
@@ -9,18 +10,35 @@ import imgHarvest    from '../../public/XAjk65kMKTQ4uS2gxSU9Jh20.png'
 import imgTHC    from '../../public/CjnRABxXX87STxgV8lxYATdLg.png'
 import imgRealFlower from '../../public/Ex2cJdZNIbXJqSYyK7qUcIMUs0.png'
 
-const SPECS = [
-  { label: 'THC POTENCY',      img: imgTHC },
-  { label: 'TRIM STYLE',       img: imgTrim },
-  { label: 'SUPERB STRUCTURE', img: imgStructure },
-  { label: 'FIRST HARVEST',    img: imgHarvest },
-  { label: '0% FILLERS',       img: imgFillers },
-  { label: '100% REAL FLOWER', img: imgRealFlower },
-]
+const SPEC_IMAGES = {
+  thc: imgTHC,
+  trim: imgTrim,
+  structure: imgStructure,
+  harvest: imgHarvest,
+  fillers: imgFillers,
+  flower: imgRealFlower,
+}
 
 export default function SpecsSection() {
   const titleRef = useReveal(0.15)
   const gridRef  = useReveal(0.1)
+  
+  const [specs, setSpecs] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const data = await getSpecs()
+        setSpecs(Array.isArray(data) ? data : [])
+      } catch (err) {
+        setSpecs([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetch()
+  }, [])
 
   return (
     <section style={{
@@ -63,9 +81,9 @@ export default function SpecsSection() {
             gap: 12,
           }}
         >
-          {SPECS.map(({ label, img }) => (
+          {specs.map(({ id, label, icon }) => (
             <div
-              key={label}
+              key={id}
               style={{
                 border: '2px solid #111',
                 borderRadius: 14,
@@ -88,7 +106,7 @@ export default function SpecsSection() {
                 marginBottom: 8,
               }}>
                 <img
-                  src={img}
+                  src={SPEC_IMAGES[icon]}
                   alt={label}
                   style={{
                     width: '100%',

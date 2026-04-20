@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { DollarSign, Share2, ThumbsUp, Star } from 'lucide-react'
+import { getAdminDashboard } from '../../api/client'
 import '../../styles/admin.css'
 
 export default function AdminDashboard() {
@@ -11,26 +12,7 @@ export default function AdminDashboard() {
     const fetchStats = async () => {
       try {
         setError('')
-
-        const token = localStorage.getItem('adminToken')
-        const res = await fetch('http://localhost:5000/api/admin/dashboard', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-          }
-        })
-
-        if (!res.ok) {
-          if (res.status === 401) {
-            throw new Error("Session expirée ou token manquant. Veuillez vous reconnecter.")
-          }
-
-          const text = await res.text()
-          throw new Error(text || `Erreur serveur (${res.status})`)
-        }
-
-        const data = await res.json()
+        const data = await getAdminDashboard('30d')
         setStats(data)
       } catch (err) {
         console.error('Erreur fetch stats:', err)

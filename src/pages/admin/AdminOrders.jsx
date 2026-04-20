@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { ArrowLeft, Package, MapPin, CreditCard } from 'lucide-react'
+import { getAdminOrders, updateOrderStatus } from '../../api/client'
 import '../../styles/admin.css'
 
 const STATUS_FR = {
@@ -24,13 +25,11 @@ export default function AdminOrders() {
   const fetchOrders = async () => {
     setLoading(true)
     try {
-      const token = localStorage.getItem('adminToken')
-      const url = filter === 'all'
-        ? 'http://localhost:5000/api/admin/orders'
-        : `http://localhost:5000/api/admin/orders?status=${filter}`
-      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
-      const data = await res.json()
-      setOrders(data.orders || [])
+      const data = await getAdminOrders(0, 100)
+      const filtered = filter === 'all' 
+        ? (data.orders || [])
+        : (data.orders || []).filter(o => o.status === filter)
+      setOrders(filtered)
     } catch (err) {
       console.error(err)
     } finally {
@@ -42,18 +41,13 @@ export default function AdminOrders() {
 
   const updateOrder = async (orderId, payload) => {
     try {
-      const token = localStorage.getItem('adminToken')
-      const res = await fetch(`http://localhost:5000/api/admin/orders/${orderId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(payload)
-      })
-      if (res.ok) {
-        fetchOrders()
-        if (selectedOrder?.id === orderId)
-          setSelectedOrder(prev => ({ ...prev, ...payload }))
-      }
-    } catch (err) { console.error(err) }
+      await updateOrderStatus(orderId, payload.status)
+      fetchOrders()
+      if (selectedOrder?.id === orderId)
+        setSelectedOrder(prev => ({ ...prev, ...payload }))
+    } catch (err) { 
+      console.error(err) 
+    }
   }
 
   const getBadge = status =>

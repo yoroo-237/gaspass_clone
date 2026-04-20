@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { ArrowLeft, User, Package, DollarSign, Mail, Phone, ShieldCheck, Calendar } from 'lucide-react'
+import { getAdminUsers, getAdminOrders } from '../../api/client'
 import '../../styles/admin.css'
 
 export default function AdminUsers() {
@@ -12,9 +13,7 @@ export default function AdminUsers() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = localStorage.getItem('adminToken')
-        const res = await fetch('http://localhost:5000/api/admin/users', { headers: { Authorization: `Bearer ${token}` } })
-        const data = await res.json()
+        const data = await getAdminUsers(0, 100)
         setUsers(data.users || [])
       } catch (err) { console.error(err) }
       finally { setLoading(false) }
@@ -27,10 +26,8 @@ export default function AdminUsers() {
     setUserOrders([])
     setLoadingOrders(true)
     try {
-      const token = localStorage.getItem('adminToken')
-      const res = await fetch('http://localhost:5000/api/admin/orders', { headers: { Authorization: `Bearer ${token}` } })
-      const all = await res.json()
-      setUserOrders((all.orders || []).filter(o => o.userId === user.id))
+      const data = await getAdminOrders(0, 100)
+      setUserOrders((data.orders || []).filter(o => o.userId === user.id))
     } catch (err) { console.error(err) }
     finally { setLoadingOrders(false) }
   }

@@ -1,35 +1,38 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import useReveal from '../hooks/useReveal.js'
+import { getCategories } from '../api/client'
 import octaneImage from '../../public/WsBRqxsaJ207ntyD0XfPcrvE.png' // ← adapte le chemin de ton image
 
-const TIERS = [
-  {
-    grade: '87',
-    label: 'Regular',
-    description: "Reliable, budget friendly, and still brings the heat. Think everyday smoke that won't break the bank.",
-    spaceBeforeDesc: true,
-  },
-  {
-    grade: '89',
-    label: 'Premium',
-    description: 'A step up in flavor, freshness, and consistency. Better bag appeal, smoother burn, and a more dialed in experience.',
-    spaceBeforeDesc: true,
-  },
-  {
-    grade: '91',
-    label: 'Supreme',
-    description: 'This is where the shelves start glowing. Loud terps, rich colors and top tier cuts that check every box.',
-    spaceBeforeDesc: false,
-  },
-  {
-    grade: '93',
-    label: 'High Octane',
-    description: 'The creme de la creme. Rare exotics, insane frost, full spectrum effects. For those who know the difference—and smoke like it.',
-    spaceBeforeDesc: false,
-  },
-]
-
 export default function OctaneSection() {
+  const [tiers, setTiers] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const categories = await getCategories()
+        // Map API categories to tier structure (grades: 87, 89, 91, 93)
+        const tierMap = {
+          'Regular': { grade: '87', description: "Reliable, budget friendly, and still brings the heat. Think everyday smoke that won't break the bank.", spaceBeforeDesc: true },
+          'Premium': { grade: '89', description: 'A step up in flavor, freshness, and consistency. Better bag appeal, smoother burn, and a more dialed in experience.', spaceBeforeDesc: true },
+          'Supreme': { grade: '91', description: 'This is where the shelves start glowing. Loud terps, rich colors and top tier cuts that check every box.', spaceBeforeDesc: false },
+          'High Octane': { grade: '93', description: 'The creme de la creme. Rare exotics, insane frost, full spectrum effects. For those who know the difference—and smoke like it.', spaceBeforeDesc: false },
+        }
+        
+        const mapped = categories
+          .filter(cat => tierMap[cat.label])
+          .map(cat => ({ label: cat.label, ...tierMap[cat.label] }))
+        
+        setTiers(mapped)
+      } catch (err) {
+        setTiers([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetch()
+  }, [])
+
   return (
     <section style={{
       background: '#000',
@@ -87,7 +90,7 @@ export default function OctaneSection() {
           </p>
 
           {/* Tiers */}
-          {TIERS.map((tier) => (
+          {tiers.map((tier) => (
             <div key={tier.grade} style={{ marginBottom: 20 }}>
               <p style={{
                 fontWeight: 700,

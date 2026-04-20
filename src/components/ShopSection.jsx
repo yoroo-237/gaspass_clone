@@ -1,69 +1,7 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useReveal from '../hooks/useReveal.js'
-
-const PRODUCTS = [
-  {
-    name: 'HITCH HIKER',
-    slug: 'hitch-hiker',
-    badge: 'New',
-    images: [
-      'public/JZlZpcElgglkOzxiEgbXIpsYy4.jpg',
-      'public/JZlZpcElgglkOzxiEgbXIpsYy4_2.jpg',
-      'public/JZlZpcElgglkOzxiEgbXIpsYy4_3.jpg',
-    ],
-  },
-  {
-    name: 'PURPLE LEMONADE',
-    slug: 'purple-lemonade',
-    badge: 'New',
-    images: [
-      'public/crE5g6o6sQNSWbWVCYXUHUktB1Y.jpg',
-      'public/crE5g6o6sQNSWbWVCYXUHUktB1Y_2.jpg',
-      'public/crE5g6o6sQNSWbWVCYXUHUktB1Y_3.jpg',
-    ],
-  },
-  {
-    name: 'SUNDAE DRIVER',
-    slug: 'sundae-driver',
-    badge: 'New',
-    images: [
-      'public/6dnHHpKmlxZ5iN3DroU9xjuMu1s.jpg',
-      'public/6dnHHpKmlxZ5iN3DroU9xjuMu1s_2.jpg',
-      'public/6dnHHpKmlxZ5iN3DroU9xjuMu1s_3.jpg',
-    ],
-  },
-  {
-    name: 'GELONADE SMALLS',
-    slug: 'gelonade-smalls',
-    badge: 'New',
-    images: [
-      'public/uFSQWKnoF44CCyIUJwJAUYSQxs.jpg',
-      'public/uFSQWKnoF44CCyIUJwJAUYSQxs_2.jpg',
-      'public/uFSQWKnoF44CCyIUJwJAUYSQxs_3.jpg',
-    ],
-  },
-  {
-    name: 'PERMANENT MARKER',
-    slug: 'permanent-marker',
-    badge: 'New',
-    images: [
-      'public/EZVdTIllwqZp3jRzDmQ87WGvg.jpg',
-      'public/EZVdTIllwqZp3jRzDmQ87WGvg_2.jpg',
-      'public/EZVdTIllwqZp3jRzDmQ87WGvg_3.jpg',
-    ],
-  },
-  {
-    name: 'BISCOTTI CAKE',
-    slug: 'biscotti-cake',
-    badge: 'New',
-    images: [
-      'public/IvRrxhETfI0kGllqcnEKrKgKdQE.jpg',
-      'public/IvRrxhETfI0kGllqcnEKrKgKdQE_2.jpg',
-      'public/IvRrxhETfI0kGllqcnEKrKgKdQE_3.jpg',
-    ],
-  },
-]
+import { getProducts } from '../api/client'
 
 function ProductCarousel({ images }) {
   const [current, setCurrent] = useState(0)
@@ -71,17 +9,17 @@ function ProductCarousel({ images }) {
   const prev = useCallback(
     (e) => {
       e.stopPropagation()
-      setCurrent((c) => (c - 1 + images.length) % images.length)
+      setCurrent((c) => (c - 1 + (images?.length || 1)) % (images?.length || 1))
     },
-    [images.length]
+    [images]
   )
 
   const next = useCallback(
     (e) => {
       e.stopPropagation()
-      setCurrent((c) => (c + 1) % images.length)
+      setCurrent((c) => (c + 1) % (images?.length || 1))
     },
-    [images.length]
+    [images]
   )
 
   return (
@@ -155,6 +93,24 @@ function ProductCard({ product, index }) {
 export default function ShopSection() {
   const titleRef = useReveal(0.2)
   const navigate = useNavigate()
+  
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true)
+        const data = await getProducts({ limit: 6 })
+        setProducts(Array.isArray(data) ? data.slice(0, 6) : [])
+      } catch (err) {
+        setProducts([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProducts()
+  }, [])
 
   return (
     <>
@@ -265,9 +221,15 @@ export default function ShopSection() {
           </div>
 
           <div className="shop-grid">
-            {PRODUCTS.map((p, i) => (
-              <ProductCard key={p.name} product={p} index={i} />
-            ))}
+            {loading ? (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px' }}>
+                Chargement des produits...
+              </div>
+            ) : (
+              products.map((p, i) => (
+                <ProductCard key={p.slug || p.name} product={p} index={i} />
+              ))
+            )}
           </div>
         </div>
       </section>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import useCart from '../hooks/useCart'
+import { getProducts } from '../api/client'
 
 /* ─── SVG Icons ─── */
 function SearchIcon({ size = 20, dark = false }) {
@@ -48,13 +49,6 @@ function CloseIcon({ size = 18 }) {
   )
 }
 
-/* ─── Popular items shown when cart is empty ─── */
-const POPULAR_ITEMS = [
-  { name: 'JUNGLE JUICE',      grade: '91 Supreme',  image: '/products/jungle-juice.jpg',      slug: 'jungle-juice' },
-  { name: 'BERRY NEBULA',      grade: '91 Supreme',  image: '/products/berry-nebula.jpg',       slug: 'berry-nebula' },
-  { name: 'PERMANENT MARKER',  grade: '89 Premium',  image: '/products/permanent-marker.jpg',   slug: 'permanent-marker' },
-]
-
 /* ─── Nav links ─── */
 const NAV_LINKS = [
   { label: 'Shop',             to: '/shop' },
@@ -95,11 +89,25 @@ export default function Navbar() {
   const [cartOpen,     setCartOpen]     = useState(false)
   const [searchOpen,   setSearchOpen]   = useState(false)
   const [searchQuery,  setSearchQuery]  = useState('')
+  const [popularItems, setPopularItems] = useState([])
   const searchRef = useRef(null)
   const { cart, getItemCount, removeFromCart, updateQuantity, clearCart } = useCart()
   const itemCount = typeof getItemCount === 'function' ? getItemCount() : (cart?.length || 0)
   const navigate = useNavigate()
   const location = useLocation()
+
+  // Fetch popular products
+  useEffect(() => {
+    const fetchPopular = async () => {
+      try {
+        const data = await getProducts({ limit: 3 })
+        setPopularItems(Array.isArray(data) ? data.slice(0, 3) : [])
+      } catch (err) {
+        setPopularItems([])
+      }
+    }
+    fetchPopular()
+  }, [])
 
   // ── Scroll to anchor — works from any page ──
   const scrollToAnchor = (anchorId) => {
@@ -609,14 +617,14 @@ export default function Navbar() {
           {cart.length === 0 ? (
             <>
               <div className="gp-popular-title">Popular items</div>
-              {POPULAR_ITEMS.map((item) => (
+              {popularItems.map((item) => (
                 <div
-                  key={item.name}
+                  key={item.name || item.slug}
                   className="gp-popular-item"
                   onClick={() => { setCartOpen(false); navigate(`/shop/${item.slug}`) }}
                 >
                   <img
-                    src={item.image}
+                    src={item.images?.[0] || item.image || ''}
                     alt={item.name}
                     className="gp-popular-img"
                     onError={e => { e.target.style.background = '#2a2a2a'; e.target.src = '' }}
