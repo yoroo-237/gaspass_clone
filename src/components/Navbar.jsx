@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import useCart from '../hooks/useCart'
 import { getProducts } from '../api/client'
+import { useApiCache } from '../hooks/useApiCache'
 
 /* ─── SVG Icons ─── */
 function SearchIcon({ size = 20, dark = false }) {
@@ -97,17 +98,18 @@ export default function Navbar() {
   const location = useLocation()
 
   // Fetch popular products
+  const { data: productsData } = useApiCache(
+    () => getProducts({ limit: 3 }),
+    'navbar_products_3',
+    15 * 60 * 1000  // Cache 15 minutes
+  )
+
   useEffect(() => {
-    const fetchPopular = async () => {
-      try {
-        const data = await getProducts({ limit: 3 })
-        setPopularItems(Array.isArray(data) ? data.slice(0, 3) : [])
-      } catch (err) {
-        setPopularItems([])
-      }
+    if (productsData) {
+      const productList = Array.isArray(productsData) ? productsData : (productsData?.products || [])
+      setPopularItems(productList.slice(0, 3))
     }
-    fetchPopular()
-  }, [])
+  }, [productsData])
 
   // ── Scroll to anchor — works from any page ──
   const scrollToAnchor = (anchorId) => {

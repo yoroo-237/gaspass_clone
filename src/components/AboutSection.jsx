@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useReveal from '../hooks/useReveal.js'
+import { useApiCache } from '../hooks/useApiCache.js'
 import { getCategories } from '../api/client'
 
 export default function AboutSection() {
@@ -9,30 +10,25 @@ export default function AboutSection() {
   const navigate = useNavigate()
   
   const [categories, setCategories] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { data: categoriesData, loading } = useApiCache(
+    () => getCategories(),
+    'about_section_categories',
+    15 * 60 * 1000  // Cache 15 minutes
+  )
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setLoading(true)
-        const data = await getCategories()
-        // Format data to match expected structure if needed
-        const formattedData = Array.isArray(data) ? data.map((cat, idx) => ({
-          id: cat.id,
-          label: `Shop ${cat.name}`,
-          sublabel: cat.name?.toUpperCase(),
-          grade: cat.name,
-          image: cat.image || null,
-        })) : []
-        setCategories(formattedData.slice(0, 4))
-      } catch (err) {
-        setCategories([])
-      } finally {
-        setLoading(false)
-      }
+    if (categoriesData) {
+      const categoryList = Array.isArray(categoriesData) ? categoriesData : (categoriesData?.categories || [])
+      const formattedData = categoryList.map((cat) => ({
+        id: cat.id,
+        label: `Shop ${cat.name}`,
+        sublabel: cat.name?.toUpperCase(),
+        grade: cat.name,
+        image: cat.image || null,
+      }))
+      setCategories(formattedData.slice(0, 4))
     }
-    fetchCategories()
-  }, [])
+  }, [categoriesData])
 
   return (
     <section id="about" style={{

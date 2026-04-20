@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useReveal from '../hooks/useReveal.js'
+import { useApiCache } from '../hooks/useApiCache.js'
 import { getProducts } from '../api/client'
 
 function ProductCarousel({ images }) {
@@ -95,22 +96,18 @@ export default function ShopSection() {
   const navigate = useNavigate()
   
   const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { data, loading, error } = useApiCache(
+    () => getProducts({ limit: 6 }),
+    'shop_section_products_6',
+    10 * 60 * 1000  // Cache 10 minutes
+  )
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true)
-        const data = await getProducts({ limit: 6 })
-        setProducts(Array.isArray(data) ? data.slice(0, 6) : [])
-      } catch (err) {
-        setProducts([])
-      } finally {
-        setLoading(false)
-      }
+    if (data) {
+      const productList = Array.isArray(data) ? data : (data?.products || [])
+      setProducts(productList.slice(0, 6))
     }
-    fetchProducts()
-  }, [])
+  }, [data])
 
   return (
     <>

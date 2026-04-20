@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useApiCache } from '../hooks/useApiCache'
 import { getTickerItems } from '../api/client'
 
 export default function MarqueeTicker() {

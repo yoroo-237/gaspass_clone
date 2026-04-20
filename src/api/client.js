@@ -1,8 +1,15 @@
 // API Configuration
 const API_URL = 'http://localhost:5000/api';
 
-// Get auth token from localStorage
-const getToken = () => localStorage.getItem('token') || '';
+// Get auth token from localStorage (user OR admin)
+const getToken = () => {
+  // Try admin token first (for admin pages)
+  const adminToken = localStorage.getItem('adminToken');
+  if (adminToken) return adminToken;
+  
+  // Fall back to user token
+  return localStorage.getItem('token') || '';
+};
 
 // Fetch wrapper with auth
 const fetchAPI = async (endpoint, options = {}) => {

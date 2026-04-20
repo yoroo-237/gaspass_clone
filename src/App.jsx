@@ -2,6 +2,7 @@ import React from 'react'
 import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom'
 import { CartProvider } from './context/CartContext'
 import ScrollToTop from './components/ScrollToTop'
+import ProtectedRoute from './components/ProtectedRoute'
 import Home from './pages/Home.jsx'
 import ShopCategoryPage from './pages/ShopCategoryPage.jsx'
 import ProductDetailPage from './pages/ProductDetailPage.jsx'
@@ -35,7 +36,11 @@ export default function App() {
         <Routes>
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route path="/admin" element={
+            <ProtectedRoute>
+              <AdminLayout />
+            </ProtectedRoute>
+          }>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="orders" element={<AdminOrders />} />

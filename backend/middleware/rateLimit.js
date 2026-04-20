@@ -3,7 +3,7 @@ import rateLimit from 'express-rate-limit';
 // ── Par IP — général ──────────────────────────────────────────────────────────
 export const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max:      100,
+  max:      500,  // Augmenté de 100 à 500 (caching côté client)
   message:  { error: 'Trop de requêtes, réessayez dans 15 minutes' },
   standardHeaders: true,
   legacyHeaders:   false
@@ -22,7 +22,7 @@ export const strictLimiter = rateLimit({
 // Identifie par userId si token présent, sinon fallback sur IP
 export const userLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max:      200,
+  max:      500,  // Augmenté de 200 à 500
   keyGenerator: (req) => {
     // Extraire userId du token si présent
     try {

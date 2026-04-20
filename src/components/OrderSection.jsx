@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useApiCache } from '../hooks/useApiCache'
 import { getFaqs } from '../api/client'
 
 function useReveal(threshold = 0.15) {
@@ -59,22 +60,19 @@ const GLOBAL_CSS = `
 function FAQ() {
   const [open, setOpen] = React.useState(null)
   const [faqs, setFaqs] = React.useState([])
-  const [loading, setLoading] = React.useState(true)
   const ref = useReveal(0.15)
 
+  const { data: faqsData, loading } = useApiCache(
+    () => getFaqs(),
+    'order_section_faqs',
+    15 * 60 * 1000  // Cache 15 minutes
+  )
+
   React.useEffect(() => {
-    const fetch = async () => {
-      try {
-        const data = await getFaqs()
-        setFaqs(Array.isArray(data) ? data : [])
-      } catch (err) {
-        setFaqs([])
-      } finally {
-        setLoading(false)
-      }
+    if (faqsData) {
+      setFaqs(Array.isArray(faqsData) ? faqsData : [])
     }
-    fetch()
-  }, [])
+  }, [faqsData])
 
   return (
     <div ref={ref} className="reveal" style={{ marginTop: 100 }}>

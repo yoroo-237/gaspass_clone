@@ -289,42 +289,58 @@ export default function AdminProducts() {
           <table className="admin-table">
             <thead>
               <tr>
+                <th>Images</th>
                 <th>Nom</th>
                 <th>Slug</th>
                 <th>Tier</th>
-                <th>Type</th>
                 <th>État</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {products.map(p => (
-                <tr key={p.id}>
-                  <td style={{ fontWeight: 600 }}>{p.name}</td>
-                  <td style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--text-mid)' }}>{p.slug}</td>
-                  <td>{p.tier || '—'}</td>
-                  <td>{p.type || '—'}</td>
-                  <td>
-                    <span className={`admin-badge ${p.active ? 'admin-badge-success' : 'admin-badge-danger'}`}>
-                      {p.active ? 'Actif' : 'Inactif'}
-                    </span>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button onClick={() => handleEdit(p)}
-                        className="admin-btn admin-btn-ghost"
-                        style={{ padding: '5px 12px', fontSize: 12, gap: 6 }}>
-                        <Pencil size={13} /> Éditer
-                      </button>
-                      <button onClick={() => handleDelete(p.id)}
-                        className="admin-btn admin-btn-danger"
-                        style={{ padding: '5px 12px', fontSize: 12, gap: 6 }}>
-                        <Trash2 size={13} /> Supprimer
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {products.map(p => {
+                const mainImage = (p.images && p.images[0]) ? 
+                  (p.images[0].startsWith('http') || p.images[0].startsWith('/') ? p.images[0] : `/uploads/${p.images[0]}`) 
+                  : null
+                return (
+                  <tr key={p.id}>
+                    <td style={{ textAlign: 'center' }}>
+                      {mainImage ? (
+                        <div style={{ width: 40, height: 40, borderRadius: 4, overflow: 'hidden', border: '1px solid #ddd', display: 'inline-block' }}>
+                          <img src={mainImage} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: 12, color: '#999' }}>—</span>
+                      )}
+                      {p.images && p.images.length > 1 && (
+                        <div style={{ fontSize: 11, color: '#666', marginTop: 4 }}>+{p.images.length - 1}</div>
+                      )}
+                    </td>
+                    <td style={{ fontWeight: 600 }}>{p.name}</td>
+                    <td style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--text-mid)' }}>{p.slug}</td>
+                    <td>{p.tier || '—'}</td>
+                    <td>
+                      <span className={`admin-badge ${p.active ? 'admin-badge-success' : 'admin-badge-danger'}`}>
+                        {p.active ? 'Actif' : 'Inactif'}
+                      </span>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button onClick={() => handleEdit(p)}
+                          className="admin-btn admin-btn-ghost"
+                          style={{ padding: '5px 12px', fontSize: 12, gap: 6 }}>
+                          <Pencil size={13} /> Éditer
+                        </button>
+                        <button onClick={() => handleDelete(p.id)}
+                          className="admin-btn admin-btn-danger"
+                          style={{ padding: '5px 12px', fontSize: 12, gap: 6 }}>
+                          <Trash2 size={13} /> Supprimer
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         )}

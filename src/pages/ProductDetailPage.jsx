@@ -31,8 +31,9 @@ export default function ProductDetailPage() {
         setProduct(productData)
         
         // Fetch related products
-        const allProducts = await getProducts()
-        const filteredRelated = allProducts
+        const allProductsResponse = await getProducts()
+        const productList = allProductsResponse?.products || []
+        const filteredRelated = productList
           .filter((p) => p.slug !== id)
           .slice(0, 4)
         setRelated(filteredRelated)

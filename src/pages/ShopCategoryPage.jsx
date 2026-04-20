@@ -134,7 +134,8 @@ export default function ShopCategoryPage() {
         setLoading(true)
         const grade = activeFilter === 'All' ? null : activeFilter
         const data = await getProducts(grade ? { grade } : {})
-        setProducts(Array.isArray(data) ? data : [])
+        // Handle both array and { count, page, limit, products } formats
+        setProducts(Array.isArray(data) ? data : (data?.products || []))
       } catch (err) {
         setError(err.message)
         setProducts([])
