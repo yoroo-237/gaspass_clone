@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import useReveal from '../hooks/useReveal.js'import { useApiCache } from '../hooks/useApiCache'import { getSpecs } from '../api/client'
+import useReveal from '../hooks/useReveal.js'
+import { useApiCache } from '../hooks/useApiCache'
+import { getSpecs } from '../api/client'
 
 // ← Remplace chaque chemin par le vrai path de ton image
 import imgFillers        from '../../public/D4HAPGqWOKT4c47k3xfsANzc1cY.png'
@@ -25,7 +27,7 @@ export default function SpecsSection() {
   const [specs, setSpecs] = useState([])
   const { data: specsData, loading } = useApiCache(
     () => getSpecs(),
-    'specs_section_specs',
+    'GET_/content/specs',
     15 * 60 * 1000  // Cache 15 minutes
   )
 

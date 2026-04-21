@@ -8,7 +8,7 @@ export default function OctaneSection() {
   const [tiers, setTiers] = useState([])
   const { data: categoriesData, loading } = useApiCache(
     () => getCategories(),
-    'octane_section_categories',
+    'GET_/categories',
     15 * 60 * 1000  // Cache 15 minutes
   )
 

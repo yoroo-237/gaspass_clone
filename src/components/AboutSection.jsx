@@ -12,7 +12,7 @@ export default function AboutSection() {
   const [categories, setCategories] = useState([])
   const { data: categoriesData, loading } = useApiCache(
     () => getCategories(),
-    'about_section_categories',
+    'GET_/categories',
     15 * 60 * 1000  // Cache 15 minutes
   )
 

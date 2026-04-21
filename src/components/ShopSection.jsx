@@ -73,6 +73,11 @@ function ProductCard({ product, index }) {
   const ref = useReveal(0.1)
   const navigate = useNavigate()
 
+  // Données de fallback pour les champs manquants
+  const images = product.images || []
+  const badge = product.badge || product.grade || 'Featured'
+  const name = product.name || 'Unnamed Product'
+
   return (
     <div
       ref={ref}
@@ -81,11 +86,11 @@ function ProductCard({ product, index }) {
       onClick={() => navigate(`/shop/${product.slug}`)}
     >
       <div className="product-image-wrapper">
-        <div className="product-badge">{product.badge}</div>
-        <ProductCarousel images={product.images} />
+        <div className="product-badge">{badge}</div>
+        <ProductCarousel images={images} />
       </div>
       <div style={{ padding: '10px 4px 4px' }}>
-        <h3 className="product-name">{product.name}</h3>
+        <h3 className="product-name">{name}</h3>
       </div>
     </div>
   )
@@ -98,7 +103,7 @@ export default function ShopSection() {
   const [products, setProducts] = useState([])
   const { data, loading, error } = useApiCache(
     () => getProducts({ limit: 6 }),
-    'shop_section_products_6',
+    'GET_/products?limit=6',
     10 * 60 * 1000  // Cache 10 minutes
   )
 

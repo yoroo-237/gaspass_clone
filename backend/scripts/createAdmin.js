@@ -34,9 +34,9 @@ const createDefaultAdmin = async () => {
         email,
         passwordHash: hashedPassword,
         firstName: 'Dr',
-        lastName: 'MKO',
+        lastName: 'Georges',
         phone: '+33600000000',
-        role: 'admin',
+        role: 'superadmin',
         verified: true,
         address: {
           street: 'Admin Street',

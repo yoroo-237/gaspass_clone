@@ -64,7 +64,7 @@ function FAQ() {
 
   const { data: faqsData, loading } = useApiCache(
     () => getFaqs(),
-    'order_section_faqs',
+    'GET_/content/faqs',
     15 * 60 * 1000  // Cache 15 minutes
   )
 

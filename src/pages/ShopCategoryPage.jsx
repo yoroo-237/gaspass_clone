@@ -28,7 +28,7 @@ function ProductCard({ product }) {
     setCurrentIndex(idx)
   }, [])
 
-  const startingPrice = product.prices['3.5g']
+  const startingPrice = product.pricing?.['3.5g'] || product.prices?.['3.5g'] || 'Contact us'
   const currentImg = images[currentIndex]
   const imgFailed = imgErrors[currentIndex]
 

@@ -4,21 +4,17 @@ import { getTickerItems } from '../api/client'
 
 export default function MarqueeTicker() {
   const [items, setItems] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { data, loading } = useApiCache(
+    () => getTickerItems(),
+    'GET_/content/ticker',
+    20 * 60 * 1000  // Cache 20 minutes
+  )
 
   useEffect(() => {
-    const fetch = async () => {
-      try {
-        const data = await getTickerItems()
-        setItems(Array.isArray(data) ? data : [])
-      } catch (err) {
-        setItems([])
-      } finally {
-        setLoading(false)
-      }
+    if (data) {
+      setItems(Array.isArray(data) ? data : [])
     }
-    fetch()
-  }, [])
+  }, [data])
 
   const all = loading ? [] : [...items, ...items, ...items, ...items]
   return (

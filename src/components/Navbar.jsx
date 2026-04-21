@@ -100,7 +100,7 @@ export default function Navbar() {
   // Fetch popular products
   const { data: productsData } = useApiCache(
     () => getProducts({ limit: 3 }),
-    'navbar_products_3',
+    'GET_/products?limit=3',
     15 * 60 * 1000  // Cache 15 minutes
   )
 
