@@ -1,5 +1,11 @@
 {
-  "backend": [
-    "npm run db:sync"
-  ]
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "RAILPACK"
+  },
+  "deploy": {
+    "startCommand": "npm run db:sync && npm run db:seed && npm start",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
 }
