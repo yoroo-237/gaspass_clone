@@ -108,7 +108,7 @@ Your GasPass e-commerce platform now has a **fully functional cart and checkout 
 
 For checkout to work, ensure:
 
-1. **Backend running on port 5000:**
+1. **Backend running on port 5001:**
    ```bash
    cd backend
    npm start
@@ -226,7 +226,7 @@ Body: { orderId, amount }
 - Check browser localStorage: Press F12 → Application → Local Storage → gaspass_cart
 
 **Checkout failing?**
-- Ensure API is running: `curl http://localhost:5000/api/products`
+- Ensure API is running: `curl http://localhost:5001/api/products`
 - Check browser console for errors (F12 → Console)
 - Verify .env variables in backend
 

@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/db.js';
 import Category from './Category.js';
+import logger from '../utils/logger.js'; // adaptez le chemin
 
 const Product = sequelize.define('Product', {
   name: { type: DataTypes.STRING, allowNull: false },
@@ -20,6 +21,9 @@ const Product = sequelize.define('Product', {
   images: { type: DataTypes.ARRAY(DataTypes.STRING) },
   active: { type: DataTypes.BOOLEAN, defaultValue: true },
   categoryId: { type: DataTypes.INTEGER, allowNull: true }
+}, {
+  tableName: 'Product',
+  underscored: true
 });
 
 Product.belongsTo(Category, { foreignKey: 'categoryId', as: 'category' });

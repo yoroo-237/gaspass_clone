@@ -7,6 +7,9 @@ const TelegramLinkCode = sequelize.define('TelegramLinkCode', {
   chatId: { type: DataTypes.BIGINT, allowNull: false },
   expiresAt: { type: DataTypes.DATE, allowNull: false },
   used: { type: DataTypes.BOOLEAN, defaultValue: false }
+}, {
+  tableName: 'TelegramLinkCode',
+  underscored: true
 });
 
 export default TelegramLinkCode;

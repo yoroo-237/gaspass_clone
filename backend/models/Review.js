@@ -13,6 +13,9 @@ const Review = sequelize.define('Review', {
   comment: { type: DataTypes.TEXT },
   verified: { type: DataTypes.BOOLEAN, defaultValue: false }, // achat vérifié
   approved: { type: DataTypes.BOOLEAN, defaultValue: false }  // modération admin
+}, {
+  tableName: 'Review',
+  underscored: true
 });
 
 Review.belongsTo(User,    { foreignKey: 'userId',    onDelete: 'CASCADE' });

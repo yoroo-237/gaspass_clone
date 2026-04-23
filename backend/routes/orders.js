@@ -43,7 +43,7 @@ const validateOrderData = (data) => {
     if (!addr.name) errors.push('Adresse: name requis');
     if (!addr.address) errors.push('Adresse: address requis');
     if (!addr.city) errors.push('Adresse: city requis');
-    if (!addr.zipcode) errors.push('Adresse: zipcode requis');
+    // ✅ zipcode optionnel — pas tout le monde a de code postal
   }
 
   return errors;

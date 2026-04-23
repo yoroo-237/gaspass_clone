@@ -9,6 +9,9 @@ const Category = sequelize.define('Category', {
   parentId:    { type: DataTypes.INTEGER, allowNull: true }, // pour sous-catégories
   active:      { type: DataTypes.BOOLEAN, defaultValue: true },
   order:       { type: DataTypes.INTEGER, defaultValue: 0 }  // tri d'affichage
+}, {
+  tableName: 'Category',
+  underscored: true
 });
 
 // Auto-relation pour hiérarchie (parent → enfants)

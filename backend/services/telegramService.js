@@ -16,12 +16,21 @@ const initializeBot = () => {
   }
 
   try {
-    bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { webHook: {} });
+    // ✅ En dev: polling, en prod: webhook
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
+      polling: !isProduction,
+      webHook: isProduction ? {} : false
+    });
 
-    if (process.env.SERVER_URL) {
+    // Configurer webhook seulement en production
+    if (isProduction && process.env.SERVER_URL) {
       bot.setWebHook(`${process.env.SERVER_URL}/api/telegram/webhook`)
         .then(() => logger.info('Telegram WebHook configuré'))
         .catch(err => logger.warn(`Telegram WebHook error: ${err.message}`));
+    } else if (!isProduction) {
+      logger.info('Telegram: polling mode (développement)');
     }
 
     // ─── COMMANDES CLIENT ───────────────────────────────────────────

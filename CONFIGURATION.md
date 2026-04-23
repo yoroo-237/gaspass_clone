@@ -13,9 +13,9 @@ DB_USER=miguel
 DB_PASSWORD=Mkomegmbdysdia4
 
 # Server
-PORT=5000
+PORT=5001
 NODE_ENV=development
-SERVER_URL=http://localhost:5000
+SERVER_URL=http://localhost:5001
 FRONTEND_URL=http://localhost:5173
 
 # JWT
@@ -33,7 +33,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 TELEGRAM_BOT_TOKEN=8717133590:AAF34M_3TuBUiP0kjTJ1P3wFtyrrqNj5Vic
 TELEGRAM_ADMIN_ID=<obtenir_avec_@userinfobot>
 TELEGRAM_ADMIN_GROUP_ID=-1001234567890
-TELEGRAM_WEBHOOK_URL=http://localhost:5000/api/telegram/webhook
+TELEGRAM_WEBHOOK_URL=http://localhost:5001/api/telegram/webhook
 
 # Admin
 ADMIN_EMAIL=admin@gaspass.local
@@ -46,7 +46,7 @@ Définir sur le dashboard Railway:
 
 ```env
 NODE_ENV=production
-PORT=5000
+PORT=5001
 SERVER_URL=https://api.gaspass.store
 FRONTEND_URL=https://gaspass.store
 
@@ -78,7 +78,7 @@ ADMIN_PASSWORD=<very_strong_password>
 
 ```env
 # .env.local (local development)
-VITE_API_URL=http://localhost:5000
+VITE_API_URL=http://localhost:5001
 
 # Vercel Environment Variables
 VITE_API_URL=https://api.gaspass.store
@@ -125,7 +125,7 @@ npm run dev
 
 **Étape 4 — Configurer le démarrage**
 1. Railway détecte automatiquement Node.js
-2. Configure `PORT=5000` si nécessaire dans Variables
+2. Configure `PORT=5001` si nécessaire dans Variables
 3. Crée la commande: `npm install && npm start`
 
 **Étape 5 — Domain personnalisé**

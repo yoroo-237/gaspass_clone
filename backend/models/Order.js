@@ -18,6 +18,9 @@ const Order = sequelize.define('Order', {
   notes: { type: DataTypes.TEXT },
   completedAt: { type: DataTypes.DATE },
   estimatedDelivery: { type: DataTypes.DATE }
+}, {
+  tableName: 'Order',
+  underscored: true
 });
 
 Order.belongsTo(User, { foreignKey: 'userId' });

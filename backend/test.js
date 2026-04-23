@@ -1,7 +1,7 @@
 // Test file - à exécuter après que le serveur soit lancé
 // Run with: npm test (si jest est configuré)
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://localhost:5001/api';
 
 // Test Products
 async function testProducts() {
@@ -117,7 +117,7 @@ async function testAdmin() {
 // Run all tests
 async function runTests() {
   console.log('🧪 Starting API Integration Tests...\n');
-  console.log('Make sure server is running on port 5000!\n');
+  console.log('Make sure server is running on port 5001!\n');
   
   const product = await testProducts();
   const token = await testAuth();

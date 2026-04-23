@@ -6,6 +6,9 @@ const Cart = sequelize.define('Cart', {
   items:      { type: DataTypes.JSONB, defaultValue: [] },
   // items = [{ productId, name, weight, quantity, pricePerUnit, image }]
   expiresAt:  { type: DataTypes.DATE } // panier expire après 7 jours d'inactivité
+}, {
+  tableName: 'Cart',
+  underscored: true
 });
 
 Cart.belongsTo(User, { foreignKey: 'userId', onDelete: 'CASCADE' });

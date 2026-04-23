@@ -10,6 +10,9 @@ const Admin = sequelize.define('Admin', {
   notes: { type: DataTypes.TEXT },
   lastLogin: { type: DataTypes.DATE },
   active: { type: DataTypes.BOOLEAN, defaultValue: true }
+}, {
+  tableName: 'Admin',
+  underscored: true
 });
 
 Admin.belongsTo(User, { foreignKey: 'userId', onDelete: 'CASCADE' });

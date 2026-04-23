@@ -340,7 +340,7 @@ src="public/m7h1aWDNxW3hPZbMe1z1MRzsFog.png"
 ## 🔌 APPELS API CENTRALISÉS
 
 ### **src/api/client.js** - Configuration
-**API_URL:** `http://localhost:5000/api`
+**API_URL:** `http://localhost:5001/api`
 
 **Auth headers:** Bearer token depuis localStorage
 

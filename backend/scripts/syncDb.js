@@ -1,21 +1,24 @@
 
 import sequelize from '../config/db.js';
-import Product from '../models/Product.js';
+
+// ✅ Ordre correct : éviter dépendances circulaires
 import User from '../models/User.js';
-import Order from '../models/Order.js';
-import TelegramLinkCode from '../models/TelegramLinkCode.js';
-import AdminLog from '../models/AdminLog.js';
 import Category from '../models/Category.js';
-import Review from '../models/Review.js';
-import Address from '../models/Address.js';
+import Product from '../models/Product.js';
+import Order from '../models/Order.js';
 import Cart from '../models/Cart.js';
+import Address from '../models/Address.js';
+import Admin from '../models/Admin.js';
+import Review from '../models/Review.js';
+import AdminLog from '../models/AdminLog.js';
+import TelegramLinkCode from '../models/TelegramLinkCode.js';
 
 const syncDb = async () => {
   try {
     await sequelize.authenticate();
     console.log('✅ Connexion DB OK');
 
-    await sequelize.sync({ alter: true });
+    await sequelize.sync({ force: true }); // ⚠️ Force pour résoudre les conflits de colonnes
 
     console.log('✅ Tables synchronisées:');
     console.log('   → User');

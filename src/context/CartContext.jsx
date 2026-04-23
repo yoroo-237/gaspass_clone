@@ -43,8 +43,8 @@ export const CartProvider = ({ children }) => {
           name: product.name,
           weight,
           quantity,
-          pricePerUnit: product.prices[weight],
-          image: product.image || (product.images && product.images[0]) || ''
+          pricePerUnit: product.pricing?.[weight] ?? 0,
+          image: product.image || product.images?.[0] || ''
         }
       ]
     })

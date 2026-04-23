@@ -41,7 +41,7 @@ const createDefaultAdmin = async () => {
         address: {
           street: 'Admin Street',
           city: 'Paris',
-          zipCode: '75000',
+          zipCode: '75001',
           country: 'France'
         }
       });

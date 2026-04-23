@@ -76,7 +76,7 @@ All components implemented and tested. Use this checklist to verify everything w
 ### Server Status
 - [ ] Backend runs without errors: `npm start` in `/backend`
 - [ ] No console errors related to Telegram bot initialization
-- [ ] Server listening on port 5000
+- [ ] Server listening on port 5001
 
 ### Database
 - [ ] Products table populated: `npm run db:seed` worked
@@ -102,7 +102,7 @@ All components implemented and tested. Use this checklist to verify everything w
 
 ### Test Create Order
 ```bash
-curl -X POST http://localhost:5000/api/orders \
+curl -X POST http://localhost:5001/api/orders \
   -H "Content-Type: application/json" \
   -d '{
     "items": [
@@ -168,7 +168,7 @@ curl -X POST http://localhost:5000/api/orders \
 |-------|----------|
 | Cart doesn't persist after refresh | Check localStorage in DevTools |
 | Badge doesn't update | Hard refresh (Ctrl+Shift+R) to clear cache |
-| Checkout fails | Verify backend is running on 5000 |
+| Checkout fails | Verify backend is running on 5001 |
 | 404 on order confirmation | Check `/order/:id` route exists in App.jsx |
 | Form validation errors | Ensure all fields filled correctly |
 | CORS errors | Add CORS headers to backend (already configured) |

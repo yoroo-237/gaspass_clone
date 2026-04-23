@@ -14,7 +14,7 @@
    DB_NAME=gaspass_db
    DB_USER=... (Railway fourni)
    DB_PASSWORD=... (Railway fourni)
-   PORT=5000
+   PORT=5001
    FRONTEND_URL=https://gaspass.vercel.app
    JWT_SECRET=<long-random-string>
    STRIPE_SECRET_KEY=sk_live_...

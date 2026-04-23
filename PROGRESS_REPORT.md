@@ -234,7 +234,7 @@ TELEGRAM_BOT_TOKEN=votre_token
 
 # Frontend URL
 FRONTEND_URL=http://localhost:5173
-PORT=5000
+PORT=5001
 ```
 
 ### Installation Frontend

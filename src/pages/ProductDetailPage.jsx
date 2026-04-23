@@ -22,6 +22,22 @@ export default function ProductDetailPage() {
   const [expanded, setExpanded]             = useState(false)
   const [addedToCart, setAddedToCart]       = useState(false)
 
+  // ✅ useCallback AVANT tous les return conditionnels
+  const decrement = useCallback(() => setQty((q) => Math.max(1, q - 1)), [])
+  const increment = useCallback(() => setQty((q) => q + 1), [])
+
+  const handleAddToCart = useCallback(() => {
+    if (!product) return
+    const productForCart = {
+      ...product,
+      image: product.images?.[0] || product.images?.[0],
+    }
+    addToCart(productForCart, selectedWeight, qty)
+    setAddedToCart(true)
+    setTimeout(() => setAddedToCart(false), 2000)
+    window.dispatchEvent(new CustomEvent('gp:open-cart'))
+  }, [product, selectedWeight, qty, addToCart])
+
   // Fetch product and related products
   useEffect(() => {
     const fetchData = async () => {
@@ -49,6 +65,7 @@ export default function ProductDetailPage() {
     }
   }, [id])
 
+  // ✅ Les return conditionnels APRÈS tous les hooks
   if (loading) {
     return (
       <div style={{ padding: '120px 40px', textAlign: 'center', fontFamily: 'sans-serif' }}>
@@ -77,21 +94,6 @@ export default function ProductDetailPage() {
   // Get images and price from product data
   const images = product?.images ?? []
   const price = product?.pricing?.[selectedWeight] ?? product?.prices?.[selectedWeight] ?? 0
-  
-  const decrement = useCallback(() => setQty((q) => Math.max(1, q - 1)), [])
-  const increment = useCallback(() => setQty((q) => q + 1), [])
-
-  const handleAddToCart = () => {
-    if (!product) return
-    const productForCart = {
-      ...product,
-      image: product.images?.[0] || product.images?.[0],
-    }
-    addToCart(productForCart, selectedWeight, qty)
-    setAddedToCart(true)
-    setTimeout(() => setAddedToCart(false), 2000)
-    window.dispatchEvent(new CustomEvent('gp:open-cart'))
-  }
 
   return (
     <>
@@ -506,10 +508,10 @@ export default function ProductDetailPage() {
               >
                 <div className="pp-browse-img-wrap">
                   {p.badge && <span className="pp-browse-badge">{p.badge}</span>}
-                  <img src={p.images[0]} alt={p.name} />
+                  <img src={p.images?.[0] || ''} alt={p.name} />
                 </div>
                 <p className="pp-browse-name">{p.name}</p>
-                <p className="pp-browse-strain">{p.strain}</p>
+                <p className="pp-browse-strain">{p.type || p.grade || ''}</p>
               </div>
             ))}
           </div>

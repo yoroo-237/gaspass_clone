@@ -15,6 +15,9 @@ const User = sequelize.define('User', {
   address: { type: DataTypes.JSONB },
   role: { type: DataTypes.STRING, defaultValue: 'customer' },
   verified: { type: DataTypes.BOOLEAN, defaultValue: false }
+}, {
+  tableName: 'User',
+  underscored: true
 });
 
 export default User;

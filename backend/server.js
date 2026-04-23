@@ -116,7 +116,24 @@ app.use(errorHandler);
   }
 })();
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 5001;
+const server = app.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`);
+});
+
+// ✅ Fix Windows nodemon SIGTERM issue
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM reçu — fermeture du serveur...');
+  server.close(() => {
+    logger.info('Serveur fermé');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  logger.info('SIGINT reçu — fermeture du serveur...');
+  server.close(() => {
+    logger.info('Serveur fermé');
+    process.exit(0);
+  });
 });

@@ -11,6 +11,9 @@ const Address = sequelize.define('Address', {
   country:    { type: DataTypes.STRING, defaultValue: 'France' },
   phone:      { type: DataTypes.STRING },
   isDefault:  { type: DataTypes.BOOLEAN, defaultValue: false }
+}, {
+  tableName: 'Address',
+  underscored: true
 });
 
 Address.belongsTo(User, { foreignKey: 'userId', onDelete: 'CASCADE' });

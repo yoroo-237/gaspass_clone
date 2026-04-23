@@ -10,6 +10,9 @@ const AdminLog = sequelize.define('AdminLog', {
   after:      { type: DataTypes.JSONB },                      // état après
   ip:         { type: DataTypes.STRING },
   userAgent:  { type: DataTypes.STRING }
+}, {
+  tableName: 'AdminLog',
+  underscored: true
 });
 
 export default AdminLog;
