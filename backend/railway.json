@@ -4,7 +4,7 @@
     "builder": "RAILPACK"
   },
   "deploy": {
-    "startCommand": "npm run db:sync && npm run db:seed && npm start",
+    "startCommand": "node scripts/syncDb.js && node scripts/seedDb.js && node server.js",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }
