@@ -488,6 +488,40 @@ router.put('/users/:id', verifyAdmin, logAdminAction('UPDATE_USER', 'User'), asy
   }
 });
 
+
+// DELETE /api/admin/users/:id — Superadmin uniquement
+router.delete('/users/:id', verifyAdmin, async (req, res) => {
+  try {
+    // Vérifier que c'est bien un superadmin
+    if (req.adminRole !== 'superadmin') {
+      return res.status(403).json({ error: 'Only superadmins can delete users' })
+    }
+ 
+    const user = await User.findByPk(req.params.id)
+    if (!user) return res.status(404).json({ error: 'User not found' })
+ 
+    // Empêcher un superadmin de se supprimer lui-même
+    if (user.id === req.adminId) {
+      return res.status(400).json({ error: 'You cannot delete your own account' })
+    }
+ 
+    // Empêcher de supprimer un autre superadmin
+    if (user.role === 'superadmin') {
+      return res.status(403).json({ error: 'Cannot delete a superadmin account' })
+    }
+ 
+    await user.destroy()
+ 
+    logger.info(`User deleted: ${user.email} by superadmin ${req.adminId}`)
+    res.json({ message: 'User deleted', userId: req.params.id })
+  } catch (err) {
+    logger.error('User delete error', { error: err.message, stack: err.stack })
+    res.status(500).json({ error: 'Delete error' })
+  }
+})
+// ──────────────────────────────────────────────────────────────────────────
+ 
+
 // POST /api/admin/products/:id/images — Ajouter une image
 router.post('/products/:id/images', verifyAdmin, async (req, res) => {
   try {
