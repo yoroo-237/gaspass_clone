@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react'
 import { useApiCache } from '../hooks/useApiCache'
 import { getFaqs } from '../api/client'
+import { SOCIAL_LINKS } from '../utils/socialLinks'
 
 function useReveal(threshold = 0.15) {
   const ref = React.useRef(null)
@@ -159,33 +161,46 @@ function FAQ() {
 }
 
 // Icône wrapper — taille fixe + border-radius + clip strict
-function IconWrapper({ src, alt, bg = 'transparent', size = 80, radius = 18 }) {
+function IconWrapper({ src, alt, bg = 'transparent', size = 80, radius = 18, href }) {
+  const inner = (
+    <div style={{
+      width: size,
+      height: size,
+      borderRadius: radius,
+      background: bg,
+      overflow: 'hidden',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
+    }}>
+      <img
+        src={src}
+        alt={alt}
+        style={{
+          width: size,
+          height: size,
+          objectFit: 'cover',
+          objectPosition: 'center',
+          display: 'block',
+          flexShrink: 0,
+        }}
+      />
+    </div>
+  )
+
+  if (href) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer"
+        className="app-icon-btn" style={{ width: size, height: size, flexShrink: 0 }}>
+        {inner}
+      </a>
+    )
+  }
+
   return (
     <button className="app-icon-btn" style={{ width: size, height: size, flexShrink: 0 }}>
-      <div style={{
-        width: size,
-        height: size,
-        borderRadius: radius,
-        background: bg,
-        overflow: 'hidden',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-      }}>
-        <img
-          src={src}
-          alt={alt}
-          style={{
-            width: size,
-            height: size,
-            objectFit: 'cover',
-            objectPosition: 'center',
-            display: 'block',
-            flexShrink: 0,
-          }}
-        />
-      </div>
+      {inner}
     </button>
   )
 }
@@ -267,10 +282,10 @@ export default function OrderSection() {
               <p style={{ fontSize: 15, lineHeight: 1.8, color: '#fff', marginBottom: 36, fontFamily: 'var(--font-sans)' }}>
                 Order today by contacting our Signal/Telegram with your cart order.
               </p>
-              {/* Signal + Telegram — ces deux icônes ont déjà leur fond intégré */}
+              {/* Signal + Telegram */}
               <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-                <IconWrapper src="/4Ox11nuVZ2I4TJhjrEgPaJ59E.png"   alt="Signal"   size={80} radius={18} />
-                <IconWrapper src="/L0vK4BJ5acKHMQRuoVVP3l4cqI.png" alt="Telegram" size={80} radius={18} />
+                <IconWrapper src={SOCIAL_LINKS.signal.icon}   alt="Signal"   size={80} radius={18} href={SOCIAL_LINKS.signal.url} />
+                <IconWrapper src={SOCIAL_LINKS.telegram.icon} alt="Telegram" size={80} radius={18} href={SOCIAL_LINKS.telegram.url} />
               </div>
             </div>
 
@@ -304,30 +319,11 @@ export default function OrderSection() {
                 Our team will respond to you promptly.<br />
                 Please message via Telegram, Signal in the links below.
               </p>
-              {/* Notesnook (fond blanc) + Session (fond dark) + Rocket (fond intégré) */}
+              {/* Linktree (fond blanc) + TatoTalk + Potato */}
               <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-                {/* Notesnook — fond BLANC avec border-radius */}
-                <IconWrapper
-                  src="/W8nyigJj6o25WXPQLVa1ipXxhxw.png"
-                  alt="Notesnook"
-                  bg="#ffffff"
-                  size={80}
-                  radius={18}
-                />
-                {/* Session — fond dark déjà dans l'image */}
-                <IconWrapper
-                  src="/image.png"
-                  alt="Session"
-                  size={80}
-                  radius={18}
-                />
-                {/* Rocket */}
-                <IconWrapper
-                  src="/Ranam7IzCM2JEHlryBtWDSwu9Rg.png"
-                  alt="Rocket"
-                  size={80}
-                  radius={18}
-                />
+                <IconWrapper src={SOCIAL_LINKS.linktree.icon}  alt="Linktree"  bg={SOCIAL_LINKS.linktree.iconBg} size={80} radius={18} href={SOCIAL_LINKS.linktree.url} />
+                <IconWrapper src={SOCIAL_LINKS.tatoTalk.icon}  alt="Tato Talk" size={80} radius={18} href={SOCIAL_LINKS.tatoTalk.url} />
+                <IconWrapper src={SOCIAL_LINKS.potato.icon}    alt="GasPass"   size={80} radius={18} href={SOCIAL_LINKS.potato.url} />
               </div>
             </div>
 
