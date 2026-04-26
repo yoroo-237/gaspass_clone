@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 
 export default function HeroSection() {
   const contentRef = useRef(null)
@@ -92,7 +93,7 @@ export default function HeroSection() {
           max-width: 500px;
         }
 
-        /* CTA button — visible dans screenshot mobile */
+        /* CTA button */
         .hero-cta {
           display: inline-flex;
           align-items: center;
@@ -188,10 +189,10 @@ export default function HeroSection() {
             <p className="hero-subtitle">
               where top shelf isn't a category — it's a standard
             </p>
-            <a href="/shop" className="hero-cta">
+            <Link to="/shop" className="hero-cta">
               <span className="hero-cta-dot" />
               Shop Flower
-            </a>
+            </Link>
           </div>
         </div>
       </section>
