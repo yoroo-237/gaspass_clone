@@ -32,8 +32,8 @@ const validateOrderData = (data) => {
     });
   }
 
-  if (!data.total || data.total <= 0) {
-    errors.push('Total requis et doit être > 0');
+  if (!data.total || data.total < 0) {
+    errors.push('Total requis et doit être >= 0');
   }
 
   // if (!data.shippingAddress) {

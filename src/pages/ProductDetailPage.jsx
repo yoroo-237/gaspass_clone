@@ -2,75 +2,63 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import useCart from '../hooks/useCart'
 import { getProduct, getProducts } from '../api/client'
-import CloudinaryImage from '../components/CloudinaryImage'
 
-const WEIGHTS = ['3.5g', '7g', '28g']
+const WEIGHTS = ['1/8 oz', '1/4 oz', '1 oz']
 
-// ── PAGE ─────────────────────────────────────────────────────────────────────
 export default function ProductDetailPage() {
-  const { id } = useParams()           // id = slug, e.g. "hitch-hiker"
+  const { id } = useParams()
   const navigate = useNavigate()
   const { addToCart } = useCart()
 
-  const [product, setProduct] = useState(null)
-  const [related, setRelated] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [product, setProduct]           = useState(null)
+  const [related, setRelated]           = useState([])
+  const [loading, setLoading]           = useState(true)
+  const [error, setError]               = useState(null)
+  const [activeImg, setActiveImg]       = useState(0)
+  const [selectedWeight, setSelectedWeight] = useState('1/8 oz')
+  const [qty, setQty]                   = useState(1)
+  const [expanded, setExpanded]         = useState(false)
+  const [addedToCart, setAddedToCart]   = useState(false)
 
-  const [activeImg, setActiveImg]           = useState(0)
-  const [selectedWeight, setSelectedWeight] = useState('3.5g')
-  const [qty, setQty]                       = useState(1)
-  const [expanded, setExpanded]             = useState(false)
-  const [addedToCart, setAddedToCart]       = useState(false)
-
-  // ✅ useCallback AVANT tous les return conditionnels
+  // ✅ Hooks AVANT tous les return conditionnels
   const decrement = useCallback(() => setQty((q) => Math.max(1, q - 1)), [])
   const increment = useCallback(() => setQty((q) => q + 1), [])
 
   const handleAddToCart = useCallback(() => {
     if (!product) return
-    const productForCart = {
-      ...product,
-      image: product.images?.[0] || product.images?.[0],
-    }
-    addToCart(productForCart, selectedWeight, qty)
+    addToCart(
+      { ...product, image: product.images?.[0] || null },
+      selectedWeight,
+      qty
+    )
     setAddedToCart(true)
     setTimeout(() => setAddedToCart(false), 2000)
     window.dispatchEvent(new CustomEvent('gp:open-cart'))
   }, [product, selectedWeight, qty, addToCart])
 
-  // Fetch product and related products
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
         const productData = await getProduct(id)
         setProduct(productData)
-        
-        // Fetch related products
         const allProductsResponse = await getProducts()
         const productList = allProductsResponse?.products || []
-        const filteredRelated = productList
-          .filter((p) => p.slug !== id)
-          .slice(0, 4)
-        setRelated(filteredRelated)
+        setRelated(productList.filter((p) => p.slug !== id).slice(0, 4))
       } catch (err) {
         setError(err.message)
       } finally {
         setLoading(false)
       }
     }
-
-    if (id) {
-      fetchData()
-    }
+    if (id) fetchData()
   }, [id])
 
-  // ✅ Les return conditionnels APRÈS tous les hooks
+  // ✅ Return conditionnels APRÈS tous les hooks
   if (loading) {
     return (
       <div style={{ padding: '120px 40px', textAlign: 'center', fontFamily: 'sans-serif' }}>
-        <p>Chargement du produit...</p>
+        <p>Loading product...</p>
       </div>
     )
   }
@@ -78,31 +66,26 @@ export default function ProductDetailPage() {
   if (error || !product) {
     return (
       <div style={{ padding: '120px 40px', textAlign: 'center', fontFamily: 'sans-serif' }}>
-        <h2>{error ? 'Erreur' : 'Produit non trouvé'}</h2>
+        <h2>{error ? 'Error' : 'Product not found'}</h2>
         <p style={{ color: '#777', marginBottom: 24 }}>
-          {error ? `Erreur: ${error}` : "Le produit que vous cherchez n'existe pas ou le lien peut être incorrect."}
+          {error ? `Error: ${error}` : "The product you're looking for doesn't exist."}
         </p>
         <button
           onClick={() => navigate('/shop')}
-          style={{ marginTop: 8, padding: '12px 28px', cursor: 'pointer', fontSize: 15, background: '#111', color: '#fff', border: 'none', borderRadius: 8 }}
+          style={{ padding: '12px 28px', cursor: 'pointer', fontSize: 15, background: '#111', color: '#fff', border: 'none', borderRadius: 8 }}
         >
-          ← Retour à la boutique
+          ← Back to shop
         </button>
       </div>
     )
   }
 
-  // Get images and price from product data
   const images = product?.images ?? []
-  const price = product?.pricing?.[selectedWeight] ?? product?.prices?.[selectedWeight] ?? 0
+  const price  = product?.pricing?.[selectedWeight] ?? 0
 
   return (
     <>
-      {/* Police pixel VT323 */}
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
-      />
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&display=swap" />
 
       <style>{`
         .pp-root * { box-sizing: border-box; }
@@ -115,12 +98,9 @@ export default function ProductDetailPage() {
 
         /* ── BREADCRUMB ── */
         .pp-info-breadcrumb {
-          font-size: 13px;
-          color: #999;
+          font-size: 13px; color: #999;
           margin-bottom: 16px;
-          display: flex;
-          gap: 6px;
-          align-items: center;
+          display: flex; gap: 6px; align-items: center;
         }
         .pp-info-breadcrumb a,
         .pp-info-breadcrumb button {
@@ -143,10 +123,8 @@ export default function ProductDetailPage() {
 
         /* ── THUMBNAILS ── */
         .pp-thumbs {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          padding-top: 4px;
+          display: flex; flex-direction: column;
+          gap: 12px; padding-top: 4px;
         }
         .pp-thumb {
           width: 72px; height: 72px;
@@ -164,28 +142,26 @@ export default function ProductDetailPage() {
           border-radius: 18px; overflow: hidden;
           background: #e8e0d0; aspect-ratio: 1 / 1;
         }
-        .pp-gallery img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 0.3s; }
+        .pp-gallery img {
+          width: 100%; height: 100%;
+          object-fit: cover; display: block;
+          transition: opacity 0.3s;
+        }
 
         /* ── PANNEAU DROIT ── */
         .pp-info { padding: 8px 0 0 16px; }
         .pp-grade-badge {
           display: inline-block;
-          background: #f5f0e8;
-          color: #8a6a2a;
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          padding: 4px 12px;
-          border-radius: 999px;
+          background: #f5f0e8; color: #8a6a2a;
+          font-size: 11px; font-weight: 700;
+          letter-spacing: 0.08em; text-transform: uppercase;
+          padding: 4px 12px; border-radius: 999px;
           margin-bottom: 12px;
         }
         .pp-product-title {
           font-size: clamp(26px, 3vw, 42px);
-          font-weight: 700;
-          letter-spacing: -0.01em;
-          margin: 0 0 10px;
-          line-height: 1.1;
+          font-weight: 700; letter-spacing: -0.01em;
+          margin: 0 0 10px; line-height: 1.1;
         }
         .pp-price {
           font-size: 18px; font-weight: 400;
@@ -224,13 +200,10 @@ export default function ProductDetailPage() {
           gap: 8px; margin-bottom: 28px;
         }
         .pp-amount-btn {
-          padding: 9px 20px;
-          border-radius: 8px;
-          border: 1.5px solid #e0e0e0;
-          background: #fff;
+          padding: 9px 20px; border-radius: 8px;
+          border: 1.5px solid #e0e0e0; background: #fff;
           font-size: 14px; font-weight: 500;
-          cursor: pointer; color: #111;
-          font-family: inherit;
+          cursor: pointer; color: #111; font-family: inherit;
           transition: border-color 0.15s;
         }
         .pp-amount-btn:hover { border-color: #999; }
@@ -261,12 +234,11 @@ export default function ProductDetailPage() {
           cursor: pointer; font-family: inherit;
           letter-spacing: 0.01em;
           transition: background 0.2s;
-          position: relative; overflow: hidden;
         }
         .pp-add-btn:hover { background: #333; }
         .pp-add-btn.added { background: #2d8c4e; }
 
-        /* Cart success toast */
+        /* Toast */
         .pp-toast {
           position: fixed; bottom: 32px; left: 50%;
           transform: translateX(-50%) translateY(120px);
@@ -278,9 +250,7 @@ export default function ProductDetailPage() {
           white-space: nowrap;
           box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         }
-        .pp-toast.visible {
-          transform: translateX(-50%) translateY(0);
-        }
+        .pp-toast.visible { transform: translateX(-50%) translateY(0); }
 
         /* ── DIVIDER ── */
         .pp-divider {
@@ -299,7 +269,6 @@ export default function ProductDetailPage() {
         .pp-promo-img-wrap {
           border-radius: 18px; overflow: hidden;
           aspect-ratio: 4 / 3; background: #1a1a2e;
-        
         }
         .pp-promo-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .pp-promo-text { display: flex; flex-direction: column; justify-content: center; }
@@ -341,8 +310,7 @@ export default function ProductDetailPage() {
         @media (max-width: 900px) {
           .pp-main {
             grid-template-columns: 1fr;
-            padding: 90px 16px 40px;
-            gap: 16px;
+            padding: 90px 16px 40px; gap: 16px;
           }
           .pp-thumbs { flex-direction: row; gap: 8px; padding-top: 0; }
           .pp-thumb { width: 60px; height: 60px; }
@@ -351,10 +319,7 @@ export default function ProductDetailPage() {
           .pp-browse-grid { grid-template-columns: repeat(2, 1fr); }
           .pp-browse { padding: 32px 16px 60px; }
           .pp-divider { padding: 0 16px; }
-          .pp-promo {
-            grid-template-columns: 1fr;
-            padding: 48px 16px 60px; gap: 32px;
-          }
+          .pp-promo { grid-template-columns: 1fr; padding: 48px 16px 60px; gap: 32px; }
           .pp-promo-heading { font-size: clamp(44px, 10vw, 64px); }
         }
         @media (max-width: 480px) {
@@ -364,14 +329,14 @@ export default function ProductDetailPage() {
         }
       `}</style>
 
-      {/* Cart added toast */}
+      {/* Toast */}
       <div className={`pp-toast${addedToCart ? ' visible' : ''}`}>
         ✓ Added to cart — {product.name} ({selectedWeight})
       </div>
 
       <div className="pp-root">
 
-        {/* 1 ── Main grid: thumbs | image | info */}
+        {/* 1 ── Main grid */}
         <div className="pp-main">
 
           {/* Thumbnails */}
@@ -382,13 +347,7 @@ export default function ProductDetailPage() {
                 className={`pp-thumb${activeImg === i ? ' active' : ''}`}
                 onClick={() => setActiveImg(i)}
               >
-                <CloudinaryImage 
-                  src={src} 
-                  alt={`${product.name} ${i + 1}`}
-                  width={150}
-                  height={150}
-                  crop="fill"
-                />
+                <img src={src} alt={`${product.name} ${i + 1}`} />
               </button>
             ))}
           </div>
@@ -396,15 +355,7 @@ export default function ProductDetailPage() {
           {/* Main image */}
           <div className="pp-gallery">
             {images[activeImg] && (
-              <CloudinaryImage 
-                src={images[activeImg]} 
-                alt={product.name} 
-                key={activeImg}
-                width={600}
-                height={600}
-                crop="limit"
-                priority={true}
-              />
+              <img src={images[activeImg]} alt={product.name} key={activeImg} />
             )}
           </div>
 
@@ -419,13 +370,18 @@ export default function ProductDetailPage() {
             </nav>
 
             {product.grade && (
-              <span className="pp-grade-badge">{product.grade} · THC {product.thc}</span>
+              <span className="pp-grade-badge">
+                {product.grade} · THC {product.thc}
+              </span>
             )}
 
             <h1 className="pp-product-title">{product.name}</h1>
             <p className="pp-price">${price}.00 USD</p>
 
-            <p className="pp-short-desc">{product.strain} strain — {product.grade}</p>
+            {/* ✅ Fix: product.type au lieu de product.strain */}
+            <p className="pp-short-desc">
+              {product.type || ''} strain — {product.grade || ''}
+            </p>
 
             <button
               className="pp-readmore"
@@ -437,13 +393,23 @@ export default function ProductDetailPage() {
 
             {expanded && (
               <div className="pp-readmore-body">
-                <p>
-                  {product.name} is a premium {product.strain.toLowerCase()} strain from
-                  the {product.grade} tier, with {product.thc} THC. Known for its
-                  exceptional aroma, dense structure, and consistent quality. Every batch
-                  is lab-tested, hand-trimmed, and packed with potency and flavor.
-                  Perfect for both connoisseurs and everyday enthusiasts.
-                </p>
+                {/* ✅ Fix: product.type au lieu de product.strain.toLowerCase() */}
+                {product.description ? (
+                  <p>{product.description}</p>
+                ) : (
+                  <p>
+                    {product.name} is a premium {(product.type || '').toLowerCase()} strain
+                    from the {product.grade || ''} tier, with {product.thc || ''} THC.
+                    Known for its exceptional aroma, dense structure, and consistent quality.
+                    Every batch is lab-tested, hand-trimmed, and packed with potency and flavor.
+                    {product.lineage ? ` Lineage: ${product.lineage}.` : ''}
+                  </p>
+                )}
+                {product.terpenes?.length > 0 && (
+                  <p style={{ marginTop: 8, color: '#777' }}>
+                    🌿 Terpenes: {Array.isArray(product.terpenes) ? product.terpenes.join(', ') : product.terpenes}
+                  </p>
+                )}
               </div>
             )}
 
@@ -487,7 +453,7 @@ export default function ProductDetailPage() {
           <div className="pp-promo-img-wrap">
             <img
               src="/Ij0OCM150ZPBqzHfngae28PyYq8.png"
-              alt="GasPass premium bags rated 87, 89, 91, 93"
+              alt="GasPass premium bags"
             />
           </div>
           <div className="pp-promo-text">
@@ -523,15 +489,11 @@ export default function ProductDetailPage() {
               >
                 <div className="pp-browse-img-wrap">
                   {p.badge && <span className="pp-browse-badge">{p.badge}</span>}
-                  <CloudinaryImage 
-                    src={p.images?.[0] || ''} 
-                    alt={p.name}
-                    width={250}
-                    height={250}
-                    crop="fill"
-                  />
+                  {/* ✅ Fix: optional chaining sur images */}
+                  <img src={p.images?.[0] || ''} alt={p.name} />
                 </div>
                 <p className="pp-browse-name">{p.name}</p>
+                {/* ✅ Fix: product.type au lieu de product.strain */}
                 <p className="pp-browse-strain">{p.type || p.grade || ''}</p>
               </div>
             ))}
