@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { SOCIAL_LINKS } from '../utils/socialLinks'
 
 const FOOTER_CSS = `
@@ -76,6 +76,22 @@ const FOOTER_CSS = `
     background: rgba(255,255,255,0.05);
   }
 
+  .footer-anchor-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    text-align: left;
+    font-size: clamp(18px, 2vw, 24px);
+    color: #fff;
+    font-family: var(--font-sans);
+    font-weight: 400;
+    line-height: 1.2;
+    transition: color 0.2s;
+    display: block;
+  }
+  .footer-anchor-btn:hover { color: rgba(255,255,255,0.55); }
+
   @media (max-width: 900px) {
     .footer-grid { grid-template-columns: 1fr; }
     .footer-divider { display: none; }
@@ -105,8 +121,8 @@ const SHOP_LINKS = [
 ]
 
 const GAS_PASS_LINKS = [
-  { label: 'About',   href: '#about' },
-  { label: 'Support', href: '#support' },
+  { label: 'About',   anchor: 'about' },
+  { label: 'Support', anchor: 'support' },
 ]
 
 function InstagramIcon() {
@@ -130,6 +146,22 @@ function InstagramIcon() {
 }
 
 export default function Footer() {
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const scrollToAnchor = (anchorId) => {
+    const doScroll = () => {
+      const el = document.getElementById(anchorId)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+    if (location.pathname !== '/') {
+      navigate('/')
+      setTimeout(doScroll, 350)
+    } else {
+      doScroll()
+    }
+  }
+
   return (
     <footer
       style={{
@@ -144,11 +176,13 @@ export default function Footer() {
         <div className="footer-grid">
 
           <div className="footer-logo-col">
-            <img
-              src="/logo_gaspass.png"
-              alt="Gas Pass"
-              style={{ height: 48, width: 'auto', display: 'block' }}
-            />
+            <Link to="/">
+              <img
+                src="/logo_gaspass.png"
+                alt="Gas Pass"
+                style={{ height: 48, width: 'auto', display: 'block' }}
+              />
+            </Link>
           </div>
 
           <div className="footer-divider" />
@@ -183,9 +217,13 @@ export default function Footer() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 {GAS_PASS_LINKS.map(function(item) {
                   return (
-                    <a key={item.label} href={item.href} className="footer-link">
+                    <button
+                      key={item.label}
+                      className="footer-anchor-btn"
+                      onClick={() => scrollToAnchor(item.anchor)}
+                    >
                       {item.label}
-                    </a>
+                    </button>
                   )
                 })}
               </div>
