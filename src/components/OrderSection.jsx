@@ -323,7 +323,7 @@ export default function OrderSection() {
                 />
                 {/* Rocket */}
                 <IconWrapper
-                  src="/public/Ranam7IzCM2JEHlryBtWDSwu9Rg.png"
+                  src="/Ranam7IzCM2JEHlryBtWDSwu9Rg.png"
                   alt="Rocket"
                   size={80}
                   radius={18}

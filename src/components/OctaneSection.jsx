@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import useReveal from '../hooks/useReveal.js'
 import { useApiCache } from '../hooks/useApiCache.js'
 import { getCategories } from '../api/client'
-import octaneImage from '../../public/WsBRqxsaJ207ntyD0XfPcrvE.png' // ← adapte le chemin de ton image
+import octaneImage from '/WsBRqxsaJ207ntyD0XfPcrvE.png' // ← adapte le chemin de ton image
 
 export default function OctaneSection() {
   const [tiers, setTiers] = useState([])

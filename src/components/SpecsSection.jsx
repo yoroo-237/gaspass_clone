@@ -4,12 +4,12 @@ import { useApiCache } from '../hooks/useApiCache'
 import { getSpecs } from '../api/client'
 
 // ← Remplace chaque chemin par le vrai path de ton image
-import imgFillers        from '../../public/D4HAPGqWOKT4c47k3xfsANzc1cY.png'
-import imgTrim       from '../../public/Z4v6mcKisd0CcCoQntR6EnXuuEM.png'
-import imgStructure  from '../../public/oaTYU2wimJHntpknH3LAM9znY.png'
-import imgHarvest    from '../../public/XAjk65kMKTQ4uS2gxSU9Jh20.png'
-import imgTHC    from '../../public/CjnRABxXX87STxgV8lxYATdLg.png'
-import imgRealFlower from '../../public/Ex2cJdZNIbXJqSYyK7qUcIMUs0.png'
+import imgFillers        from '/D4HAPGqWOKT4c47k3xfsANzc1cY.png'
+import imgTrim       from '/Z4v6mcKisd0CcCoQntR6EnXuuEM.png'
+import imgStructure  from '/oaTYU2wimJHntpknH3LAM9znY.png'
+import imgHarvest    from '/XAjk65kMKTQ4uS2gxSU9Jh20.png'
+import imgTHC    from '/CjnRABxXX87STxgV8lxYATdLg.png'
+import imgRealFlower from '/Ex2cJdZNIbXJqSYyK7qUcIMUs0.png'
 
 const SPEC_IMAGES = {
   thc: imgTHC,

@@ -1,7 +1,7 @@
 import React from 'react'
 import useReveal from '../hooks/useReveal.js'
 
-const HERO_IMAGE = '/public/m7CojsTPdwZHCKQYdWtnYIDM.webp'
+const HERO_IMAGE = '/m7CojsTPdwZHCKQYdWtnYIDM.webp'
 
 export default function AnnouncementSection() {
   const ref = useReveal(0.2)
