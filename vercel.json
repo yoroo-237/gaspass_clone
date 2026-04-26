@@ -2,5 +2,21 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "react",
-  "outputDirectory": "dist"
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    }
+  ]
 }

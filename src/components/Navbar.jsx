@@ -518,7 +518,12 @@ export default function Navbar() {
                 >
                   <SearchIcon size={22} />
                 </button>
-                <button className="gp-icon-btn" aria-label="Compte">
+                <button
+                  className="gp-icon-btn"
+                  aria-label="Compte"
+                  onClick={() => navigate('/admin/login')}
+                  title="Admin"
+                >
                   <UserIcon size={22} />
                 </button>
                 <button
@@ -576,7 +581,12 @@ export default function Navbar() {
               >
                 <SearchIcon size={20} />
               </button>
-              <button className="gp-pill-btn" aria-label="Compte">
+              <button
+                className="gp-pill-btn"
+                aria-label="Compte"
+                onClick={() => navigate('/admin/login')}
+                title="Admin"
+              >
                 <UserIcon size={20} />
               </button>
               <button
