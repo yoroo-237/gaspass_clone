@@ -1,39 +1,39 @@
 import React, { useState, useEffect } from 'react'
 import { Plus, Pencil, Trash2, ArrowLeft, X } from 'lucide-react'
 import { getAdminProducts, createProduct, updateProduct, deleteProduct, uploadImage } from '../../api/client'
-import CloudinaryImage from '../../components/CloudinaryImage'
 import '../../styles/admin.css'
 
-const WEIGHTS = ['3.5g', '7g', '28g']
+// ✅ Oz instead of grams
+const WEIGHTS = ['1/8 oz', '1/4 oz', '1 oz']
 
 const EMPTY = {
-  name: '',
-  slug: '',
-  grade: '',
-  tier: '',
-  thc: '',
-  cbd: '',
-  type: '',
-  lineage: '',
-  terpenes: '',
+  name:        '',
+  slug:        '',
+  grade:       '',
+  tier:        '',
+  thc:         '',
+  cbd:         '',
+  type:        '',
+  lineage:     '',
+  terpenes:    '',
   description: '',
-  active: true,
-  images: [],
-  tags: [],
-  pricing: { '3.5g': '', '7g': '', '28g': '' },
-  stock: { '3.5g': '', '7g': '', '28g': '' },
+  active:      true,
+  images:      [],
+  tags:        [],
+  pricing: { '1/8 oz': '', '1/4 oz': '', '1 oz': '' },
+  stock:   { '1/8 oz': '', '1/4 oz': '', '1 oz': '' },
 }
 
 export default function AdminProducts() {
-  const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState(null)
-  const [form, setForm] = useState(EMPTY)
-  const [saving, setSaving] = useState(false)
+  const [products, setProducts]           = useState([])
+  const [loading, setLoading]             = useState(true)
+  const [showForm, setShowForm]           = useState(false)
+  const [editingId, setEditingId]         = useState(null)
+  const [form, setForm]                   = useState(EMPTY)
+  const [saving, setSaving]               = useState(false)
   const [selectedFiles, setSelectedFiles] = useState([])
   const [uploadingImages, setUploadingImages] = useState(false)
-  const [tagInput, setTagInput] = useState('')
+  const [tagInput, setTagInput]           = useState('')
 
   const fetchProducts = async () => {
     setLoading(true)
@@ -57,56 +57,45 @@ export default function AdminProducts() {
     setTagInput('')
   }
 
-  const handleFileSelect = (e) => {
-    setSelectedFiles(Array.from(e.target.files || []))
-  }
+  const handleFileSelect = (e) => setSelectedFiles(Array.from(e.target.files || []))
 
-  const removeImage = (idx) =>
-    setForm((p) => ({ ...p, images: (p.images || []).filter((_, i) => i !== idx) }))
-
-  const removeSelectedFile = (idx) =>
-    setSelectedFiles((f) => f.filter((_, i) => i !== idx))
+  const removeImage       = (idx) => setForm((p) => ({ ...p, images: (p.images || []).filter((_, i) => i !== idx) }))
+  const removeSelectedFile = (idx) => setSelectedFiles((f) => f.filter((_, i) => i !== idx))
 
   const addTag = () => {
-    const t = tagInput.trim()
+    const t = tagInput.trim().toLowerCase()
     if (t && !(form.tags || []).includes(t)) {
       setForm((p) => ({ ...p, tags: [...(p.tags || []), t] }))
     }
     setTagInput('')
   }
+  const removeTag = (t) => setForm((p) => ({ ...p, tags: (p.tags || []).filter((x) => x !== t) }))
 
-  const removeTag = (t) =>
-    setForm((p) => ({ ...p, tags: (p.tags || []).filter((x) => x !== t) }))
-
-  const setPricing = (weight) => (e) =>
-    setForm((p) => ({ ...p, pricing: { ...p.pricing, [weight]: e.target.value } }))
-
-  const setStock = (weight) => (e) =>
-    setForm((p) => ({ ...p, stock: { ...p.stock, [weight]: e.target.value } }))
+  const setPricing = (weight) => (e) => setForm((p) => ({ ...p, pricing: { ...p.pricing, [weight]: e.target.value } }))
+  const setStock   = (weight) => (e) => setForm((p) => ({ ...p, stock:   { ...p.stock,   [weight]: e.target.value } }))
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
     try {
+      // Upload images
       let uploadedUrls = form.images || []
       if (selectedFiles.length > 0) {
         setUploadingImages(true)
-        const urls = []
         for (const file of selectedFiles) {
           try {
             const result = await uploadImage(file)
-            if (result.url) urls.push(result.url)
+            if (result.url) uploadedUrls = [...uploadedUrls, result.url]
           } catch (err) {
             alert(`Upload error: ${err.message}`)
           }
         }
-        uploadedUrls = [...uploadedUrls, ...urls]
         setUploadingImages(false)
       }
 
-      // Clean pricing & stock: convert to numbers, remove empty
+      // Clean pricing & stock
       const cleanPricing = {}
-      const cleanStock = {}
+      const cleanStock   = {}
       WEIGHTS.forEach((w) => {
         if (form.pricing?.[w] !== '' && form.pricing?.[w] != null)
           cleanPricing[w] = Number(form.pricing[w])
@@ -114,11 +103,18 @@ export default function AdminProducts() {
           cleanStock[w] = Number(form.stock[w])
       })
 
+      // ✅ Fix terpenes: always send as array
+      const terpenes = typeof form.terpenes === 'string'
+        ? form.terpenes.split(',').map((t) => t.trim()).filter(Boolean)
+        : Array.isArray(form.terpenes) ? form.terpenes : []
+
       const payload = {
         ...form,
-        images: uploadedUrls,
-        pricing: cleanPricing,
-        stock: cleanStock,
+        images:   uploadedUrls,
+        pricing:  cleanPricing,
+        stock:    cleanStock,
+        terpenes,
+        tags: Array.isArray(form.tags) ? form.tags : [],
       }
 
       if (editingId) {
@@ -141,12 +137,12 @@ export default function AdminProducts() {
     setForm({
       ...EMPTY,
       ...p,
-      images: (p.images || []).map((img) =>
-        img.startsWith('http') || img.startsWith('/') ? img : `/uploads/${img}`
-      ),
-      pricing: { '3.5g': '', '7g': '', '28g': '', ...(p.pricing || {}) },
-      stock: { '3.5g': '', '7g': '', '28g': '', ...(p.stock || {}) },
-      tags: p.tags || [],
+      images:   (p.images || []),
+      pricing:  { '1/8 oz': '', '1/4 oz': '', '1 oz': '', ...(p.pricing || {}) },
+      stock:    { '1/8 oz': '', '1/4 oz': '', '1 oz': '', ...(p.stock || {}) },
+      tags:     p.tags || [],
+      // ✅ Display terpenes array as comma string for the input
+      terpenes: Array.isArray(p.terpenes) ? p.terpenes.join(', ') : (p.terpenes || ''),
     })
     setEditingId(p.id)
     setShowForm(true)
@@ -158,16 +154,12 @@ export default function AdminProducts() {
     try {
       await deleteProduct(id)
       fetchProducts()
-    } catch (err) {
-      console.error(err)
-    }
+    } catch (err) { console.error(err) }
   }
 
-  const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }))
+  const set      = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }))
   const setCheck = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.checked }))
-
-  const autoSlug = (name) =>
-    name.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+  const autoSlug = (name) => name.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
 
   return (
     <div>
@@ -177,7 +169,9 @@ export default function AdminProducts() {
           onClick={() => { if (showForm) resetForm(); else setShowForm(true) }}
           className={`admin-btn ${showForm ? 'admin-btn-ghost' : 'admin-btn-primary'}`}
         >
-          {showForm ? <><ArrowLeft size={15} /> Cancel</> : <><Plus size={15} /> New Product</>}
+          {showForm
+            ? <><ArrowLeft size={15} /> Cancel</>
+            : <><Plus size={15} /> New Product</>}
         </button>
       </div>
 
@@ -185,10 +179,9 @@ export default function AdminProducts() {
       {showForm && (
         <div className="admin-card" style={{ marginBottom: 24 }}>
           <div className="admin-card-header">
-            <h2 className="admin-card-title">
-              {editingId ? 'Edit Product' : 'New Product'}
-            </h2>
+            <h2 className="admin-card-title">{editingId ? 'Edit Product' : 'New Product'}</h2>
           </div>
+
           <form onSubmit={handleSubmit} style={{ padding: 24 }}>
 
             {/* Basic info */}
@@ -211,27 +204,32 @@ export default function AdminProducts() {
               </div>
               <div className="admin-form-group">
                 <label className="admin-form-label">Grade</label>
-                <input type="text" className="admin-form-input" placeholder="e.g. Premium"
+                <input type="text" className="admin-form-input" placeholder="e.g. 91"
                   value={form.grade} onChange={set('grade')} />
               </div>
               <div className="admin-form-group">
                 <label className="admin-form-label">Tier</label>
-                <input type="text" className="admin-form-input" placeholder="e.g. Elite"
+                <input type="text" className="admin-form-input" placeholder="e.g. SUPREME"
                   value={form.tier} onChange={set('tier')} />
               </div>
               <div className="admin-form-group">
                 <label className="admin-form-label">Type</label>
-                <input type="text" className="admin-form-input" placeholder="e.g. Flower, Resin"
-                  value={form.type} onChange={set('type')} />
+                <select className="admin-form-select" value={form.type} onChange={set('type')}>
+                  <option value="">Select type…</option>
+                  <option value="Hybrid">Hybrid</option>
+                  <option value="Indica">Indica</option>
+                  <option value="Sativa">Sativa</option>
+                  <option value="CBD">CBD</option>
+                </select>
               </div>
               <div className="admin-form-group">
                 <label className="admin-form-label">THC %</label>
-                <input type="text" className="admin-form-input" placeholder="e.g. 22.5"
+                <input type="text" className="admin-form-input" placeholder="e.g. 28%"
                   value={form.thc} onChange={set('thc')} />
               </div>
               <div className="admin-form-group">
                 <label className="admin-form-label">CBD %</label>
-                <input type="text" className="admin-form-input" placeholder="e.g. 0.2"
+                <input type="text" className="admin-form-input" placeholder="e.g. 0.2%"
                   value={form.cbd} onChange={set('cbd')} />
               </div>
               <div className="admin-form-group">
@@ -243,13 +241,16 @@ export default function AdminProducts() {
 
             <div className="admin-form-group" style={{ marginBottom: 16 }}>
               <label className="admin-form-label">Terpenes</label>
-              <input type="text" className="admin-form-input" placeholder="e.g. Myrcene, Limonene, Caryophyllene"
+              <input type="text" className="admin-form-input"
+                placeholder="e.g. Myrcene, Limonene, Caryophyllene (comma separated)"
                 value={form.terpenes} onChange={set('terpenes')} />
+              <span className="admin-form-hint">Separate with commas — will be saved as a list</span>
             </div>
 
             <div className="admin-form-group" style={{ marginBottom: 24 }}>
               <label className="admin-form-label">Description</label>
-              <textarea className="admin-form-textarea" rows={4} placeholder="Full product description…"
+              <textarea className="admin-form-textarea" rows={4}
+                placeholder="Full product description…"
                 value={form.description} onChange={set('description')} />
             </div>
 
@@ -261,17 +262,14 @@ export default function AdminProducts() {
                   <label className="admin-form-label">Price — {w}</label>
                   <div style={{ position: 'relative' }}>
                     <span style={{
-                      position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
-                      fontSize: 13, color: '#888', pointerEvents: 'none'
+                      position: 'absolute', left: 12, top: '50%',
+                      transform: 'translateY(-50%)', fontSize: 13, color: '#888', pointerEvents: 'none'
                     }}>$</span>
-                    <input
-                      type="number" min="0" step="0.01"
-                      className="admin-form-input"
-                      style={{ paddingLeft: 24 }}
+                    <input type="number" min="0" step="0.01"
+                      className="admin-form-input" style={{ paddingLeft: 24 }}
                       placeholder="0.00"
                       value={form.pricing?.[w] ?? ''}
-                      onChange={setPricing(w)}
-                    />
+                      onChange={setPricing(w)} />
                   </div>
                 </div>
               ))}
@@ -283,13 +281,10 @@ export default function AdminProducts() {
               {WEIGHTS.map((w) => (
                 <div className="admin-form-group" key={w}>
                   <label className="admin-form-label">Stock — {w}</label>
-                  <input
-                    type="number" min="0" step="1"
-                    className="admin-form-input"
-                    placeholder="0"
+                  <input type="number" min="0" step="1"
+                    className="admin-form-input" placeholder="0"
                     value={form.stock?.[w] ?? ''}
-                    onChange={setStock(w)}
-                  />
+                    onChange={setStock(w)} />
                 </div>
               ))}
             </div>
@@ -298,17 +293,14 @@ export default function AdminProducts() {
             <p className="admin-section-label">Tags</p>
             <div className="admin-form-group" style={{ marginBottom: 24 }}>
               <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-                <input
-                  type="text"
-                  className="admin-form-input"
-                  placeholder="Add a tag…"
+                <input type="text" className="admin-form-input"
+                  placeholder="Add a tag and press Enter…"
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag() } }}
-                  style={{ flex: 1 }}
-                />
-                <button type="button" onClick={addTag} className="admin-btn admin-btn-ghost"
-                  style={{ padding: '8px 16px' }}>
+                  style={{ flex: 1 }} />
+                <button type="button" onClick={addTag}
+                  className="admin-btn admin-btn-ghost" style={{ padding: '8px 16px' }}>
                   Add
                 </button>
               </div>
@@ -321,7 +313,7 @@ export default function AdminProducts() {
                     }}>
                       {t}
                       <button type="button" onClick={() => removeTag(t)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', color: '#666' }}>
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#666', display: 'flex' }}>
                         <X size={12} />
                       </button>
                     </span>
@@ -333,15 +325,10 @@ export default function AdminProducts() {
             {/* Images */}
             <p className="admin-section-label">Images</p>
             <div className="admin-form-group" style={{ marginBottom: 24 }}>
-              <input
-                type="file" multiple accept="image/*"
+              <input type="file" multiple accept="image/*"
                 onChange={handleFileSelect}
-                className="admin-form-input"
-                style={{ cursor: 'pointer' }}
-              />
-              <p style={{ fontSize: 12, color: '#888', marginTop: 6 }}>
-                JPEG, PNG, WebP, GIF — max 5MB each
-              </p>
+                className="admin-form-input" style={{ cursor: 'pointer' }} />
+              <span className="admin-form-hint">JPEG, PNG, WebP — max 5MB each. Uploaded to Cloudinary.</span>
 
               {(form.images || []).length > 0 && (
                 <div style={{ marginTop: 14 }}>
@@ -350,22 +337,16 @@ export default function AdminProducts() {
                     {form.images.map((url, idx) => (
                       <div key={idx} style={{
                         position: 'relative', width: 80, height: 80,
-                        borderRadius: 6, overflow: 'hidden', border: '1px solid #ddd'
+                        borderRadius: 6, overflow: 'hidden', border: '1.5px solid #e0e0e0'
                       }}>
-                        <CloudinaryImage 
-                          src={url} 
-                          alt="img" 
-                          width={80}
-                          height={80}
-                          crop="fill"
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        />
+                        <img src={url} alt="product" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         <button type="button" onClick={() => removeImage(idx)} style={{
-                          position: 'absolute', top: 2, right: 2,
-                          background: 'rgba(0,0,0,0.65)', border: 'none', color: '#fff',
-                          borderRadius: 3, cursor: 'pointer', display: 'flex', padding: 2
+                          position: 'absolute', top: 3, right: 3,
+                          background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff',
+                          borderRadius: '50%', width: 20, height: 20,
+                          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
                         }}>
-                          <X size={13} />
+                          <X size={11} />
                         </button>
                       </div>
                     ))}
@@ -375,7 +356,7 @@ export default function AdminProducts() {
 
               {selectedFiles.length > 0 && (
                 <div style={{ marginTop: 14 }}>
-                  <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>To upload:</p>
+                  <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>To upload ({selectedFiles.length}):</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     {selectedFiles.map((file, idx) => (
                       <div key={idx} style={{
@@ -389,9 +370,7 @@ export default function AdminProducts() {
                         <button type="button" onClick={() => removeSelectedFile(idx)} style={{
                           background: '#111', color: '#fff', border: 'none',
                           borderRadius: 3, padding: '2px 8px', cursor: 'pointer', fontSize: 10
-                        }}>
-                          Remove
-                        </button>
+                        }}>Remove</button>
                       </div>
                     ))}
                   </div>
@@ -401,7 +380,7 @@ export default function AdminProducts() {
 
             <label className="admin-checkbox-row" style={{ marginBottom: 24 }}>
               <input type="checkbox" checked={form.active} onChange={setCheck('active')} />
-              Active (visible on the store)
+              Active — visible on the store
             </label>
 
             <div className="admin-form-actions">
@@ -443,11 +422,7 @@ export default function AdminProducts() {
             </thead>
             <tbody>
               {products.map((p) => {
-                const mainImage = p.images?.[0]
-                  ? p.images[0].startsWith('http') || p.images[0].startsWith('/')
-                    ? p.images[0]
-                    : `/uploads/${p.images[0]}`
-                  : null
+                const mainImage = p.images?.[0] || null
                 const prices = WEIGHTS
                   .filter((w) => p.pricing?.[w])
                   .map((w) => `${w}: $${p.pricing[w]}`)
@@ -456,15 +431,12 @@ export default function AdminProducts() {
                   <tr key={p.id}>
                     <td style={{ textAlign: 'center' }}>
                       {mainImage ? (
-                        <div style={{ width: 40, height: 40, borderRadius: 4, overflow: 'hidden', border: '1px solid #ddd', display: 'inline-block' }}>
-                          <CloudinaryImage 
-                            src={mainImage} 
-                            alt={p.name} 
-                            width={40}
-                            height={40}
-                            crop="fill"
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          />
+                        <div style={{
+                          width: 40, height: 40, borderRadius: 6,
+                          overflow: 'hidden', border: '1px solid #e0e0e0', display: 'inline-block'
+                        }}>
+                          <img src={mainImage} alt={p.name}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </div>
                       ) : (
                         <span style={{ fontSize: 12, color: '#999' }}>—</span>
