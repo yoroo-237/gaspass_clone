@@ -58,7 +58,7 @@ src/
 ├── main.jsx                    # Point d'entrée React
 └── index.css                   # Styles index (vide probablement)
 
-public/                         # Assets statiques
+/                         # Assets statiques
 ├── hero.jpeg                   # Image hero
 ├── *.jpg, *.png, *.webp       # Images produits et sections
 └── [nombreuses images uploadées]
@@ -215,7 +215,7 @@ background-image: url(/hero.jpeg)
 ```javascript
 const PRODUCTS = [
   { name: 'HITCH HIKER', slug: 'hitch-hiker', badge: 'New', 
-    images: ['public/JZlZpcElgglkOzxiEgbXIpsYy4.jpg', ...] },
+    images: ['/JZlZpcElgglkOzxiEgbXIpsYy4.jpg', ...] },
   // ... (5 autres)
 ]
 ```
@@ -242,7 +242,7 @@ const SPECS = [
   // ... (4 autres)
 ]
 ```
-**Images importées:** De `public/`
+**Images importées:** De `/`
 
 #### **AboutSection.jsx**
 **Données mockées:** 4 catégories shop
@@ -332,7 +332,7 @@ const HERO_IMAGE = '/m7CojsTPdwZHCKQYdWtnYIDM.webp'
 #### **AboutSection2.jsx**
 **Données mockées:** Image
 ```javascript
-src="public/m7h1aWDNxW3hPZbMe1z1MRzsFog.png"
+src="/m7h1aWDNxW3hPZbMe1z1MRzsFog.png"
 ```
 
 ---
@@ -610,7 +610,7 @@ const NAV_ITEMS = [
 - **Components:** PascalCase, .jsx
 - **Hooks:** camelCase, useXxx, .js
 - **CSS:** Inline + tailwind + CSS-in-JS
-- **Images:** public/ ou relative imports
+- **Images:** / ou relative imports
 - **Colors:** CSS variables --color-xxx
 - **Fonts:** --font-pixel (titres), --font-sans (body)
 

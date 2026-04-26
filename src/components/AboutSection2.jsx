@@ -87,7 +87,7 @@ export default function AboutSection() {
               className="about-img-col about-reveal"
             >
               <img
-                src="public/m7h1aWDNxW3hPZbMe1z1MRzsFog.png"
+                src="/m7h1aWDNxW3hPZbMe1z1MRzsFog.png"
                 alt="GasPass"
                 style={{
                   width: '100%',

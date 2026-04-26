@@ -269,8 +269,8 @@ export default function OrderSection() {
               </p>
               {/* Signal + Telegram — ces deux icônes ont déjà leur fond intégré */}
               <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-                <IconWrapper src="public/4Ox11nuVZ2I4TJhjrEgPaJ59E.png"   alt="Signal"   size={80} radius={18} />
-                <IconWrapper src="public/L0vK4BJ5acKHMQRuoVVP3l4cqI.png" alt="Telegram" size={80} radius={18} />
+                <IconWrapper src="/4Ox11nuVZ2I4TJhjrEgPaJ59E.png"   alt="Signal"   size={80} radius={18} />
+                <IconWrapper src="/L0vK4BJ5acKHMQRuoVVP3l4cqI.png" alt="Telegram" size={80} radius={18} />
               </div>
             </div>
 
@@ -308,7 +308,7 @@ export default function OrderSection() {
               <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
                 {/* Notesnook — fond BLANC avec border-radius */}
                 <IconWrapper
-                  src="public/W8nyigJj6o25WXPQLVa1ipXxhxw.png"
+                  src="/W8nyigJj6o25WXPQLVa1ipXxhxw.png"
                   alt="Notesnook"
                   bg="#ffffff"
                   size={80}
@@ -316,7 +316,7 @@ export default function OrderSection() {
                 />
                 {/* Session — fond dark déjà dans l'image */}
                 <IconWrapper
-                  src="public/image.png"
+                  src="/image.png"
                   alt="Session"
                   size={80}
                   radius={18}
