@@ -188,7 +188,7 @@ export default function HeroSection() {
             <p className="hero-subtitle">
               where top shelf isn't a category — it's a standard
             </p>
-            <a href="#boutique" className="hero-cta">
+            <a href="/shop" className="hero-cta">
               <span className="hero-cta-dot" />
               Shop Flower
             </a>
