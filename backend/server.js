@@ -41,17 +41,37 @@ app.use(helmet.contentSecurityPolicy({
   }
 }));
 
-// CORS dynamique
+// CORS dynamique - Support www/non-www et variantes
 const allowedOrigins = process.env.FRONTEND_URL
   ? process.env.FRONTEND_URL.split(',').map(o => o.trim())
   : [];
 
-if (allowedOrigins.length === 0) {
+// Ajouter automatiquement les variantes www si domaine racine existe
+const corsOrigins = new Set(allowedOrigins);
+allowedOrigins.forEach(origin => {
+  if (origin.includes('://')) {
+    const parts = origin.split('://');
+    const protocol = parts[0];
+    const domain = parts[1];
+    // Ajouter www si absent
+    if (!domain.startsWith('www.')) {
+      corsOrigins.add(`${protocol}://www.${domain}`);
+    }
+    // Ajouter sans www si présent
+    if (domain.startsWith('www.')) {
+      corsOrigins.add(`${protocol}://${domain.slice(4)}`);
+    }
+  }
+});
+
+const finalOrigins = Array.from(corsOrigins);
+
+if (finalOrigins.length === 0) {
   logger.warn('⚠️  FRONTEND_URL non défini — CORS bloqué pour toutes les origines');
 }
 
 if (process.env.NODE_ENV === 'production') {
-  logger.info('✅ CORS Production autorisé pour:', allowedOrigins.join(', '));
+  logger.info('✅ CORS Production autorisé pour:', finalOrigins.join(', '));
 }
 
 app.use(cors({
@@ -67,19 +87,20 @@ app.use(cors({
     }
     
     // Vérifier si l'origin est autorisée
-    if (allowedOrigins.includes(origin)) {
+    if (finalOrigins.includes(origin)) {
       return callback(null, true);
     }
     
     // Rejeter avec log détaillé
-    const errorMsg = `CORS: origine non autorisée [${origin}]. Autorisées: [${allowedOrigins.join(', ')}]`;
+    const errorMsg = `CORS: origine non autorisée [${origin}]. Autorisées: [${finalOrigins.join(', ')}]`;
     logger.warn(errorMsg);
     return callback(new Error(errorMsg));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  maxAge: 3600
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
+  maxAge: 86400 // 24h
 }));
 
 // Custom middleware to handle raw body for Stripe webhook
