@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 function useReveal(threshold = 0.15) {
   const ref = React.useRef(null)
@@ -120,7 +121,7 @@ export default function AboutSection() {
                 ONLY AT GAS PASS
               </div>
 
-              {/* Big headline — taille exacte screenshot */}
+              {/* Big headline */}
               <h2 style={{
                 fontFamily: 'var(--font-pixel)',
                 fontSize: 'clamp(20px, 2.8vw, 36px)',
@@ -135,7 +136,7 @@ export default function AboutSection() {
                 gas
               </h2>
 
-              {/* Body paragraphs — bold, taille screenshot */}
+              {/* Body paragraphs */}
               {[
                 'Before the apps. Before the hype. Before the "industry" had names and licenses - there was just the gas and those who knew where to find it.',
                 'GasPass was founded by a small crew of friends who had been in the game for over a decade, moving quietly and consistently through the legacy market. We weren\'t out chasing trends - we were focused on doing good business, building trust, and always showing up with quality.',
@@ -160,9 +161,9 @@ export default function AboutSection() {
 
               {/* CTA */}
               <div style={{ marginTop: 32 }}>
-                <a href="/shop" className="shop-btn">
+                <Link to="/shop" className="shop-btn">
                   Shop Flower <span>→</span>
-                </a>
+                </Link>
               </div>
             </div>
 

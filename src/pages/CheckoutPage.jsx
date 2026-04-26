@@ -1,10 +1,9 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import useCart from '../hooks/useCart'
 import { createOrder } from '../api/client'
 import { SOCIAL_LINKS } from '../utils/socialLinks'
 
-// Même pattern qu'OrderSection — image dans un wrapper clippé
 function SocialIcon({ src, alt, bg = 'transparent', size = 24, radius = 6 }) {
   return (
     <div style={{
@@ -117,16 +116,17 @@ Let's confirm the details and finalize your order!`
           <p style={{ color: '#777', marginBottom: 32 }}>
             You don't have any items in your cart.
           </p>
-          <button
-            onClick={() => navigate('/shop')}
+          <Link
+            to="/shop"
             style={{
               padding: '14px 36px', background: '#111', color: '#fff',
-              borderRadius: 50, border: 'none', fontWeight: 600,
-              fontSize: 15, cursor: 'pointer'
+              borderRadius: 50, fontWeight: 600,
+              fontSize: 15, cursor: 'pointer', textDecoration: 'none',
+              display: 'inline-block',
             }}
           >
             ← Back to Shop
-          </button>
+          </Link>
         </div>
       </>
     )
@@ -361,6 +361,7 @@ Let's confirm the details and finalize your order!`
 
           <div className="social-buttons">
             {Object.keys(SOCIAL_LINKS).map((key) => (
+              /* External URLs — kept as <a> with target="_blank" */
               <a
                 key={key}
                 href={SOCIAL_LINKS[key].url}
