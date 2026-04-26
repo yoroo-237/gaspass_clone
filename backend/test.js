@@ -1,7 +1,9 @@
 // Test file - à exécuter après que le serveur soit lancé
 // Run with: npm test (si jest est configuré)
+import dotenv from 'dotenv';
+dotenv.config();
 
-const API_URL = 'http://localhost:5001/api';
+const API_URL = process.env.SERVER_URL ? `${process.env.SERVER_URL}/api` : 'http://localhost:5001/api';
 
 // Test Products
 async function testProducts() {

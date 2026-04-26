@@ -47,21 +47,39 @@ const allowedOrigins = process.env.FRONTEND_URL
   : [];
 
 if (allowedOrigins.length === 0) {
-  logger.warn('FRONTEND_URL non défini — CORS bloqué pour toutes les origines');
+  logger.warn('⚠️  FRONTEND_URL non défini — CORS bloqué pour toutes les origines');
+}
+
+if (process.env.NODE_ENV === 'production') {
+  logger.info('✅ CORS Production autorisé pour:', allowedOrigins.join(', '));
 }
 
 app.use(cors({
   origin: (origin, callback) => {
     // Autoriser les requêtes sans origin (Postman, mobile, curl) en dev uniquement
-    if (!origin && process.env.NODE_ENV !== 'production') {
-      return callback(null, true);
+    if (!origin) {
+      if (process.env.NODE_ENV !== 'production') {
+        return callback(null, true);
+      } else {
+        // En production, rejeter les requêtes sans origin
+        return callback(new Error('CORS: origin requise en production'));
+      }
     }
+    
+    // Vérifier si l'origin est autorisée
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    callback(new Error(`CORS: origine non autorisée — ${origin}`));
+    
+    // Rejeter avec log détaillé
+    const errorMsg = `CORS: origine non autorisée [${origin}]. Autorisées: [${allowedOrigins.join(', ')}]`;
+    logger.warn(errorMsg);
+    return callback(new Error(errorMsg));
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  maxAge: 3600
 }));
 
 // Custom middleware to handle raw body for Stripe webhook

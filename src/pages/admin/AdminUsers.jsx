@@ -6,7 +6,7 @@ import {
 import { getAdminUsers, getAdminOrders } from '../../api/client'
 import '../../styles/admin.css'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001'
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5001'
 
 // What roles can the current admin assign
 const ASSIGNABLE_ROLES = {

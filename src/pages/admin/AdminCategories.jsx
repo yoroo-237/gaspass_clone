@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Plus, Pencil, Trash2, ArrowLeft, Tag } from 'lucide-react'
 import '../../styles/admin.css'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001'
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5001'
 
 const EMPTY = { name: '', slug: '', description: '', active: true }
 
