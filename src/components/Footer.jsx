@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const FOOTER_CSS = `
   .footer-link {
@@ -55,7 +56,6 @@ const FOOTER_CSS = `
     justify-content: flex-start;
   }
 
-  /* Instagram icon */
   .ig-btn {
     background: none;
     border: 1.5px solid rgba(255,255,255,0.7);
@@ -68,20 +68,16 @@ const FOOTER_CSS = `
     cursor: pointer;
     transition: border-color 0.2s, background 0.2s;
     padding: 0;
+    text-decoration: none;
   }
   .ig-btn:hover {
     border-color: #fff;
     background: rgba(255,255,255,0.05);
   }
 
-  /* ── Responsive ── */
   @media (max-width: 900px) {
-    .footer-grid {
-      grid-template-columns: 1fr;
-    }
-    .footer-divider {
-      display: none;
-    }
+    .footer-grid { grid-template-columns: 1fr; }
+    .footer-divider { display: none; }
     .footer-logo-col {
       padding: 40px 0 0 0;
       border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -95,26 +91,57 @@ const FOOTER_CSS = `
   }
 
   @media (max-width: 480px) {
-    .footer-nav-col {
-      grid-template-columns: 1fr;
-      gap: 40px 0;
-    }
+    .footer-nav-col { grid-template-columns: 1fr; gap: 40px 0; }
   }
 `
 
+const SHOP_LINKS = [
+  { label: 'All',             to: '/shop' },
+  { label: '87 Regular',     to: '/shop?grade=87 Regular' },
+  { label: '89 Premium',     to: '/shop?grade=89 Premium' },
+  { label: '91 Supreme',     to: '/shop?grade=91 Supreme' },
+  { label: '93 High Octane', to: '/shop?grade=93 High Octane' },
+]
+
+const GAS_PASS_LINKS = [
+  { label: 'About',   href: '#about' },
+  { label: 'Support', href: '#support' },
+]
+
+function InstagramIcon() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#fff"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="0.8" fill="#fff" stroke="none" />
+    </svg>
+  )
+}
+
 export default function Footer() {
   return (
-    <footer style={{
-      background: '#000',
-      borderTop: '1px solid rgba(255,255,255,0.1)',
-      padding: '0 48px 40px',
-    }}>
+    <footer
+      style={{
+        background: '#000',
+        borderTop: '1px solid rgba(255,255,255,0.1)',
+        padding: '0 48px 40px',
+      }}
+    >
       <style>{FOOTER_CSS}</style>
 
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
         <div className="footer-grid">
 
-          {/* ── LEFT — Logo ── */}
           <div className="footer-logo-col">
             <img
               src="/logo_gaspass.png"
@@ -123,59 +150,52 @@ export default function Footer() {
             />
           </div>
 
-          {/* ── Vertical divider ── */}
           <div className="footer-divider" />
 
-          {/* ── RIGHT — Nav columns ── */}
           <div className="footer-nav-col">
 
-            {/* Shop + Follow */}
             <div>
               <div className="footer-col-title">Shop</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginBottom: 52 }}>
-                {['All', '87 Regular', '89 Premium', '91 Supreme', '93 High Octane'].map(l => (
-                  <a key={l} href="#shop" className="footer-link">{l}</a>
-                ))}
+                {SHOP_LINKS.map(function(item) {
+                  return (
+                    <Link key={item.label} to={item.to} className="footer-link">
+                      {item.label}
+                    </Link>
+                  )
+                })}
               </div>
 
-              {/* Follow */}
               <div className="footer-col-title">Follow</div>
               <a
                 href="https://instagram.com"
                 target="_blank"
                 rel="noreferrer"
                 className="ig-btn"
-                style={{ textDecoration: 'none' }}
               >
-                {/* Instagram SVG icon */}
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-                  <circle cx="12" cy="12" r="4"/>
-                  <circle cx="17.5" cy="6.5" r="0.8" fill="#fff" stroke="none"/>
-                </svg>
+                <InstagramIcon />
               </a>
             </div>
 
-            {/* Gas Pass */}
             <div>
               <div className="footer-col-title">Gas Pass</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                {['About', 'Support'].map(l => (
-                  <a key={l} href={`#${l.toLowerCase()}`} className="footer-link">{l}</a>
-                ))}
+                {GAS_PASS_LINKS.map(function(item) {
+                  return (
+                    <a key={item.label} href={item.href} className="footer-link">
+                      {item.label}
+                    </a>
+                  )
+                })}
               </div>
             </div>
 
           </div>
         </div>
 
-        {/* ── Bottom bar ── */}
         <div className="footer-bottom">
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>
-            |
-          </span>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>|</span>
         </div>
-
       </div>
     </footer>
   )
