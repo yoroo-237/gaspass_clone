@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getOrder } from '../api/client'
+import { SOCIAL_LINKS } from '../utils/socialLinks'
 
 const STATUS_MAP = {
   pending:    { label: 'Pending',     icon: '', color: '#c8a96e' },
@@ -391,8 +392,8 @@ export default function OrderPage() {
 
           <p className="op-support">
             Questions? Reach us on Telegram:{' '}
-            <a href="https://t.me/gaspassreal" target="_blank" rel="noreferrer">
-              @gaspassreal
+            <a href={SOCIAL_LINKS.telegram.url} target="_blank" rel="noreferrer">
+              {SOCIAL_LINKS.telegram.username}
             </a>
           </p>
 

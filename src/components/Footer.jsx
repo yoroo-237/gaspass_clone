@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { SOCIAL_LINKS } from '../utils/socialLinks'
 
 const FOOTER_CSS = `
   .footer-link {
