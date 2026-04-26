@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import useReveal from '../hooks/useReveal.js'
+import { Link } from 'react-router-dom'
 import { useApiCache } from '../hooks/useApiCache.js'
 import { getCategories } from '../api/client'
 import octaneImage from '/WsBRqxsaJ207ntyD0XfPcrvE.png' // ← adapte le chemin de ton image
@@ -121,8 +121,8 @@ export default function OctaneSection() {
           </p>
 
           {/* Shop Flower CTA */}
-          <a
-            href="/shop"
+          <Link
+            to="/shop"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -148,7 +148,7 @@ export default function OctaneSection() {
             }}
           >
             Shop Flower →
-          </a>
+          </Link>
         </div>
 
         {/* ── RIGHT COLUMN — sticky image ── */}
