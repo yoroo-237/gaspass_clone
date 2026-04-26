@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import useCart from '../hooks/useCart'
 import { getProduct, getProducts } from '../api/client'
+import CloudinaryImage from '../components/CloudinaryImage'
 
 const WEIGHTS = ['3.5g', '7g', '28g']
 
@@ -381,7 +382,13 @@ export default function ProductDetailPage() {
                 className={`pp-thumb${activeImg === i ? ' active' : ''}`}
                 onClick={() => setActiveImg(i)}
               >
-                <img src={src} alt={`${product.name} ${i + 1}`} />
+                <CloudinaryImage 
+                  src={src} 
+                  alt={`${product.name} ${i + 1}`}
+                  width={150}
+                  height={150}
+                  crop="fill"
+                />
               </button>
             ))}
           </div>
@@ -389,7 +396,15 @@ export default function ProductDetailPage() {
           {/* Main image */}
           <div className="pp-gallery">
             {images[activeImg] && (
-              <img src={images[activeImg]} alt={product.name} key={activeImg} />
+              <CloudinaryImage 
+                src={images[activeImg]} 
+                alt={product.name} 
+                key={activeImg}
+                width={600}
+                height={600}
+                crop="limit"
+                priority={true}
+              />
             )}
           </div>
 
@@ -508,7 +523,13 @@ export default function ProductDetailPage() {
               >
                 <div className="pp-browse-img-wrap">
                   {p.badge && <span className="pp-browse-badge">{p.badge}</span>}
-                  <img src={p.images?.[0] || ''} alt={p.name} />
+                  <CloudinaryImage 
+                    src={p.images?.[0] || ''} 
+                    alt={p.name}
+                    width={250}
+                    height={250}
+                    crop="fill"
+                  />
                 </div>
                 <p className="pp-browse-name">{p.name}</p>
                 <p className="pp-browse-strain">{p.type || p.grade || ''}</p>

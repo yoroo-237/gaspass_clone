@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import useCart from '../hooks/useCart'
 import { createOrder } from '../api/client'
+import CloudinaryImage from '../components/CloudinaryImage'
 
 export default function CheckoutPage() {
   const navigate = useNavigate()
@@ -423,7 +424,14 @@ export default function CheckoutPage() {
               {cart.map(item => (
                 <div key={`${item.productId}-${item.weight}`} className="co-item">
                   {item.image
-                    ? <img src={item.image} alt={item.name} className="co-item-img" />
+                    ? <CloudinaryImage 
+                        src={item.image} 
+                        alt={item.name} 
+                        width={80}
+                        height={80}
+                        crop="fill"
+                        className="co-item-img"
+                      />
                     : <div className="co-item-img" />
                   }
                   <div className="co-item-info">
