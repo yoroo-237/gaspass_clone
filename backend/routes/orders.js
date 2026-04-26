@@ -36,15 +36,15 @@ const validateOrderData = (data) => {
     errors.push('Total requis et doit être > 0');
   }
 
-  if (!data.shippingAddress) {
-    errors.push('Adresse de livraison requise');
-  } else {
-    const addr = data.shippingAddress;
-    if (!addr.name) errors.push('Adresse: name requis');
-    if (!addr.address) errors.push('Adresse: address requis');
-    if (!addr.city) errors.push('Adresse: city requis');
-    // ✅ zipcode optionnel — pas tout le monde a de code postal
-  }
+  // if (!data.shippingAddress) {
+  //   errors.push('Adresse de livraison requise');
+  // } else {
+  //   const addr = data.shippingAddress;
+  //   // if (!addr.name) errors.push('Adresse: name requis');
+  //   // if (!addr.address) errors.push('Adresse: address requis');
+  //   // if (!addr.city) errors.push('Adresse: city requis');
+  //   // ✅ zipcode optionnel — pas tout le monde a de code postal
+  // }
 
   return errors;
 };
