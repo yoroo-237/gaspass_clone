@@ -24,8 +24,8 @@ const validateProduct = (data) => {
   const errors = [];
   if (!data.name || typeof data.name !== 'string') errors.push('Name required (string)');
   if (!data.slug || typeof data.slug !== 'string') errors.push('Slug required (string)');
-  if (data.thc && !/^\d+(\.\d+)?$/.test(data.thc)) errors.push('THC must be numeric');
-  if (data.cbd && !/^\d+(\.\d+)?$/.test(data.cbd)) errors.push('CBD must be numeric');
+  if (data.thc && !/^\d+(\.\d+)?%?$/.test(data.thc)) errors.push('THC must be numeric (e.g., 30 or 30%)');
+  if (data.cbd && !/^\d+(\.\d+)?%?$/.test(data.cbd)) errors.push('CBD must be numeric (e.g., 0.1 or 0.1%)');
   return errors;
 };
 
