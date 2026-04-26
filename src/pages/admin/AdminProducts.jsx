@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Plus, Pencil, Trash2, ArrowLeft, X } from 'lucide-react'
 import { getAdminProducts, createProduct, updateProduct, deleteProduct, uploadImage } from '../../api/client'
+import CloudinaryImage from '../../components/CloudinaryImage'
 import '../../styles/admin.css'
 
 const WEIGHTS = ['3.5g', '7g', '28g']
@@ -351,7 +352,14 @@ export default function AdminProducts() {
                         position: 'relative', width: 80, height: 80,
                         borderRadius: 6, overflow: 'hidden', border: '1px solid #ddd'
                       }}>
-                        <img src={url} alt="img" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <CloudinaryImage 
+                          src={url} 
+                          alt="img" 
+                          width={80}
+                          height={80}
+                          crop="fill"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
                         <button type="button" onClick={() => removeImage(idx)} style={{
                           position: 'absolute', top: 2, right: 2,
                           background: 'rgba(0,0,0,0.65)', border: 'none', color: '#fff',
@@ -449,7 +457,14 @@ export default function AdminProducts() {
                     <td style={{ textAlign: 'center' }}>
                       {mainImage ? (
                         <div style={{ width: 40, height: 40, borderRadius: 4, overflow: 'hidden', border: '1px solid #ddd', display: 'inline-block' }}>
-                          <img src={mainImage} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <CloudinaryImage 
+                            src={mainImage} 
+                            alt={p.name} 
+                            width={40}
+                            height={40}
+                            crop="fill"
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
                         </div>
                       ) : (
                         <span style={{ fontSize: 12, color: '#999' }}>—</span>

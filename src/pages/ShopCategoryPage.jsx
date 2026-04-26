@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { getProducts } from '../api/client'
+import CloudinaryImage from '../components/CloudinaryImage'
 
 const GRADE_FILTERS = ['All', '87 Regular', '89 Premium', '91 Supreme', '93 High Octane']
 
@@ -51,13 +52,18 @@ function ProductCard({ product }) {
             imgErrors[idx] ? (
               <div key={idx} className="scp-carousel-slide scp-card-placeholder" />
             ) : (
-              <img
-                key={idx}
-                src={src}
-                alt={`${product.name} ${idx + 1}`}
-                className="scp-carousel-slide scp-card-img"
-                onError={() => setImgErrors(prev => ({ ...prev, [idx]: true }))}
-              />
+              <div key={idx} className="scp-carousel-slide scp-card-img">
+                <CloudinaryImage
+                  src={src}
+                  alt={`${product.name} ${idx + 1}`}
+                  width={400}
+                  height={400}
+                  crop="fill"
+                  className="w-full h-full object-cover"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={() => setImgErrors(prev => ({ ...prev, [idx]: true }))}
+                />
+              </div>
             )
           ))}
         </div>
