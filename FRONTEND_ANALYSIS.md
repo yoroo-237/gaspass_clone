@@ -326,7 +326,7 @@ const NAV_LINKS = [
 #### **AnnouncementSection.jsx**
 **Données mockées:** Image background
 ```javascript
-const HERO_IMAGE = '/public/m7CojsTPdwZHCKQYdWtnYIDM.webp'
+const HERO_IMAGE = '/m7CojsTPdwZHCKQYdWtnYIDM.webp'
 ```
 
 #### **AboutSection2.jsx**

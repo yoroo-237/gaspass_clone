@@ -486,7 +486,7 @@ export default function ProductDetailPage() {
         <section className="pp-promo">
           <div className="pp-promo-img-wrap">
             <img
-              src="/public/Ij0OCM150ZPBqzHfngae28PyYq8.png"
+              src="/Ij0OCM150ZPBqzHfngae28PyYq8.png"
               alt="GasPass premium bags rated 87, 89, 91, 93"
             />
           </div>
